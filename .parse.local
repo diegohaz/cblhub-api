@@ -1,0 +1,10 @@
+{
+  "applications": {
+    "_default": {
+      "link": "opencbl"
+    },
+    "opencbl": {
+      "applicationId": "u4Sb7tV4jOqPNqD9nouqVQMgwQwEIemuOl2GPesc"
+    }
+  }
+}
