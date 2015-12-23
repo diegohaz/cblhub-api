@@ -1,7 +1,7 @@
 {
   "project_type": 1,
   "parse": {
-    "jssdk": "latest"
+    "jssdk": "1.6.12"
   },
   "email": "hazdiego@gmail.com"
 }
