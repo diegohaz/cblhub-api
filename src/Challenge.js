@@ -1,5 +1,8 @@
 import User from './User';
 import Contribution from './Contribution';
+import Question from './Question';
+import Activity from './Activity';
+import Resource from './Resource';
 import Tag from './Tag';
 import Keyword from './Keyword';
 
@@ -136,7 +139,7 @@ export default class Challenge extends Parse.Object {
 
   // beforeDelete
   static beforeDelete(request, response) {
-    Parse.Cloud.useMasterkey();
+    Parse.Cloud.useMasterKey();
 
     let challenge = request.object;
 

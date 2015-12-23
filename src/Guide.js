@@ -119,7 +119,7 @@ export default class Guide extends Parse.Object {
 
   // beforeDelete
   static beforeDelete(request, response) {
-    Parse.Cloud.useMasterkey();
+    Parse.Cloud.useMasterKey();
 
     let Contribution = require('./Contribution');
     let Challenge = require('./Challenge');
@@ -129,11 +129,11 @@ export default class Guide extends Parse.Object {
 
     let object = request.object;
 
-    Contribution.cleanUp(this.single, object)
-      .always(() => Challenge.cleanUp(this.plural, object))
-      .always(() => Question.cleanUp(this.plural, object))
-      .always(() => Activity.cleanUp(this.plural, object))
-      .always(() => Resource.cleanUp(this.plural, object))
+    Contribution.cleanUp(object.single, object)
+      .always(() => Challenge.cleanUp(object.plural, object))
+      .always(() => Question.cleanUp(object.plural, object))
+      .always(() => Activity.cleanUp(object.plural, object))
+      .always(() => Resource.cleanUp(object.plural, object))
       .always(() => response.success());
   }
 
@@ -142,7 +142,7 @@ export default class Guide extends Parse.Object {
     let object = new Parse.Query(this);
 
     object.include(['user', 'challenge', 'tags']);
-    object.include(this.guides);
+    object.include(object.guides);
 
     return object.get(id).then(o => {
       return o? Parse.Promise.as(o.view()) : Parse.Promise.error();
@@ -157,20 +157,21 @@ export default class Guide extends Parse.Object {
     limit = 30,
     page = 0
   } = {}) {
+    let object = new Parse.Object(this);
     let objects = new Parse.Query(this);
 
     // constraints
     challenge && objects.equalTo('challenge', challenge);
-    user     && objects.equalTo('user', user);
-    question && objects.equalTo('questions', question);
-    activity && objects.equalTo('adjectives', activity);
-    resource && objects.equalTo('resources', resource);
-    tag      && objects.equalTo('tags', tag);
-    keywords && objects.containedIn('keywords', keywords);
+    user      && objects.equalTo('user', user);
+    question  && objects.equalTo('questions', question);
+    activity  && objects.equalTo('adjectives', activity);
+    resource  && objects.equalTo('resources', resource);
+    tag       && objects.equalTo('tags', tag);
+    keywords  && objects.containedIn('keywords', keywords);
 
     // includes
-    if (challenge && this.guides) {
-      objects.include(this.guides.concat(this.guides.map(g => g + '.user')));
+    if (challenge && object.guides) {
+      objects.include(object.guides.concat(object.guides.map(g => g + '.user')));
     } else {
       objects.include(['challenge', 'challenge.user']);
     }
