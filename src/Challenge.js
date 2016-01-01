@@ -127,7 +127,7 @@ export default class Challenge extends Parse.Object {
 
       if (!challenge.get('photo')) {
         promise = promise.always(() => {
-          return Photo.search({tags: challenge.get('keywords'), limit: 1, pointers: true});
+          return Photo.search({keywords: challenge.get('keywords'), limit: 1, pointers: true});
         }).then(photos => {
           if (photos.length) {
             challenge.set('photo', photos[0]);
