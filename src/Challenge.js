@@ -107,6 +107,7 @@ export default class Challenge extends Parse.Object {
   // beforeSave
   static beforeSave(request, response) {
     let challenge = request.object;
+    let promise = Parse.Promise.as();
 
     if (!challenge.get('title')) return response.error('Empty title');
 
@@ -115,12 +116,18 @@ export default class Challenge extends Parse.Object {
       challenge.set('description', clean(challenge.get('description')));
       challenge.set('bigIdea', clean(challenge.get('bigIdea')));
       challenge.set('essentialQuestion', clean(challenge.get('essentialQuestion')));
-      challenge.set('keywords', []);
+
+      let text = challenge.indexes.map(k => challenge.get(k)).join('\n');
+
+      promise = Keyword.extract(text).then(keywords => {
+        challenge.set('keywords', keywords);
+      });
     }
 
-    challenge.schematize();
-
-    response.success();
+    promise.always(() => {
+      challenge.schematize();
+      response.success();
+    });
   }
 
   // afterSave
@@ -128,12 +135,6 @@ export default class Challenge extends Parse.Object {
     let challenge = request.object;
 
     if (!challenge.get('keywords').length) {
-      let text = challenge.indexes.map(k => challenge.get(k)).join('\n');
-
-      Keyword.extract(text).then(keywords => {
-        challenge.set('keywords', keywords);
-        challenge.save();
-      });
     }
   }
 
