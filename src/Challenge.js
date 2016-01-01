@@ -47,7 +47,7 @@ export default class Challenge extends Parse.Object {
 
     view.id = this.id;
     view.user = this.get('user')? this.get('user').view() : undefined;
-    view.photo = this.get('photo').view();
+    view.photo = this.get('photo')? this.get('photo').view() : undefined;
     view.title = this.get('title');
     view.description = this.get('description');
     view.bigIdea = this.get('bigIdea');
