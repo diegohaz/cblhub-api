@@ -1,4 +1,5 @@
 import User from './User';
+import Photo from './Photo';
 import Contribution from './Contribution';
 import Question from './Question';
 import Activity from './Activity';
@@ -15,14 +16,15 @@ export default class Challenge extends Parse.Object {
     super('Challenge', attributes, options);
 
     this.indexes = ['title', 'description', 'bigIdea', 'essentialQuestion'];
+    this.photos = [];
   }
 
   // schematize
   schematize() {
     this.get('user')              || this.set('user', User.current());
+    // this.get('photo')          || this.set('photo', Photo);
     this.get('title')             || this.set('title', '');
     this.get('description')       || this.set('description', '');
-    this.get('image')             || this.set('image', '');
     this.get('bigIdea')           || this.set('bigIdea', '');
     this.get('essentialQuestion') || this.set('essentialQuestion', '');
     this.get('keywords')          || this.set('keywords', []);
@@ -45,9 +47,9 @@ export default class Challenge extends Parse.Object {
 
     view.id = this.id;
     view.user = this.get('user')? this.get('user').view() : undefined;
+    view.photo = this.get('photo').view();
     view.title = this.get('title');
     view.description = this.get('description');
-    view.image = this.get('image');
     view.bigIdea = this.get('bigIdea');
     view.essentialQuestion = this.get('essentialQuestion');
     view.keywords = this.get('keywords');
@@ -71,11 +73,11 @@ export default class Challenge extends Parse.Object {
 
     challenge.include([
       'user', 'contributors', 'contributors.user',
-      'questions', 'activities', 'resources'
+      'questions', 'activities', 'resources', 'photo'
     ]);
 
-    return challenge.get(id).then(d => {
-      return d? Parse.Promise.as(d.view()) : Parse.Promise.error();
+    return challenge.get(id).then(c => {
+      return c? Parse.Promise.as(c.view()) : Parse.Promise.error();
     });
   }
 
@@ -94,7 +96,7 @@ export default class Challenge extends Parse.Object {
     contributor && challenges.equalTo('contributors', contributor);
     keywords    && challenges.containedIn('keywords', keywords);
 
-    challenges.include('user');
+    challenges.include(['user', 'photo']);
     challenges[order](orderBy);
     challenges.limit(limit);
     challenges.skip(limit * page);
@@ -122,6 +124,16 @@ export default class Challenge extends Parse.Object {
       promise = Keyword.extract(text).then(keywords => {
         challenge.set('keywords', keywords);
       });
+
+      if (!challenge.get('photo')) {
+        promise = promise.always(() => {
+          return Photo.search({tags: challenge.get('keywords'), limit: 1, pointers: true});
+        }).then(photos => {
+          if (photos.length) {
+            challenge.set('photo', photos[0]);
+          }
+        });
+      }
     }
 
     promise.always(() => {

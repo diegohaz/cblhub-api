@@ -7,3 +7,4 @@ import './Resource';
 import './Activity';
 import './Tag';
 import './Keyword';
+import './Photo';
