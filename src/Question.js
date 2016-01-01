@@ -6,7 +6,6 @@ export default class Question extends Guide {
 
     this.single = 'question';
     this.plural = 'questions';
-    this.guides = ['activities', 'resources'];
   }
 }
 

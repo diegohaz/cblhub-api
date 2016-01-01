@@ -7,6 +7,11 @@ import clean from 'underscore.string/clean';
 import cleanDiacritics from 'underscore.string/cleanDiacritics';
 
 export default class Guide extends Parse.Object {
+  constructor(className, attributes, options) {
+    super(className, attributes, options);
+
+    this.guides = ['questions', 'activities', 'resources'];
+  }
   // schematize
   schematize() {
     // this.get('challenge') || this.set('challenge', Challenge);
@@ -63,14 +68,8 @@ export default class Guide extends Parse.Object {
     if (!object.get('challenge')) return response.error('Empty challenge');
     if (!object.get('title')) return response.error('Empty title');
 
-    if (object.dirty('title') || object.dirty('text')) {
-      object.set('title', clean(object.get('title')));
-      object.set('text', clean(object.get('text')));
-      object.set('keywords', []);
-    }
-
     object.guides.forEach(guide => {
-      if (object.dirty(guide)) {
+      if (object.dirty(guide) && object.op(guide)) {
         let op = object.op(guide);
         let opName = op instanceof Parse.Op.Remove? 'remove' : 'addUnique';
 
@@ -82,9 +81,23 @@ export default class Guide extends Parse.Object {
       }
     });
 
-    object.schematize();
+    let promise = Parse.Promise.as();
 
-    response.success();
+    if (object.dirty('title') || object.dirty('text')) {
+      object.set('title', clean(object.get('title')));
+      object.set('text', clean(object.get('text')));
+
+      let text = ['title', 'text'].map(k => object.get(k)).join('\n');
+
+      promise = Keyword.extract(text).then(keywords => {
+        object.set('keywords', keywords);
+      });
+    }
+
+    promise.always(() => {
+      object.schematize();
+      response.success();
+    });
   }
 
   // afterSave
@@ -105,15 +118,6 @@ export default class Guide extends Parse.Object {
 
       challenge.addUnique(object.plural, object);
       challenge.save();
-    }
-
-    if (!object.get('keywords').length) {
-      let text = ['title', 'text'].map(k => object.get(k)).join('\n');
-
-      Keyword.extract(text).then(keywords => {
-        object.set('keywords', keywords);
-        object.save();
-      });
     }
   }
 
