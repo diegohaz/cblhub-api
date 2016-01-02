@@ -88,7 +88,7 @@ export default class Challenge extends Parse.Object {
     user, contributor, keywords,
     orderBy = 'updatedAt',
     order = 'descending',
-    limit = 30,
+    limit = 20,
     page = 0
   } = {}) {
     let challenges = new Parse.Query(this);

@@ -41,7 +41,7 @@ export default class Tag extends Parse.Object {
     challenge,
     orderBy = 'title',
     order = 'ascending',
-    limit = 30,
+    limit = 20,
     page = 0
   } = {}) {
     let tags = new Parse.Query(this);

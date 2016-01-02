@@ -32,7 +32,7 @@ export default class Contribution extends Parse.Object {
     challenge, user, after,
     order = 'descending',
     orderBy = 'createdAt',
-    limit = 30,
+    limit = 20,
     page = 0
   } = {}) {
     let contributions = new Parse.Query(this);

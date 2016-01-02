@@ -158,7 +158,7 @@ export default class Guide extends Parse.Object {
     challenge, user, question, activity, resource, tag, keywords,
     orderBy = 'createdAt',
     order = 'descending',
-    limit = 30,
+    limit = 20,
     page = 0
   } = {}) {
     let object = new Parse.Object(this);

@@ -34,7 +34,7 @@ export default class Contributor extends Parse.Object {
   static list({
     order = 'descending',
     orderBy = 'total',
-    limit = 30,
+    limit = 20,
     page = 0
   } = {}) {
     let contributors = new Parse.Query(this);
