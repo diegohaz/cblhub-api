@@ -94,7 +94,11 @@ export default class Challenge extends Parse.Object {
     // constraints
     user        && challenges.equalTo('user', user);
     contributor && challenges.equalTo('contributors', contributor);
-    keywords    && challenges.containedIn('keywords', keywords);
+
+    if (keywords) {
+      keywords = keywords.map(k => cleanDiacritics(k.toLowerCase()));
+      challenges.containedIn('keywords', keywords);
+    }
 
     challenges.include(['user', 'photo']);
     challenges[order](orderBy);
@@ -124,16 +128,21 @@ export default class Challenge extends Parse.Object {
       promise = Keyword.extract(text).then(keywords => {
         challenge.set('keywords', keywords);
       });
+    }
 
-      if (!challenge.get('photo')) {
-        promise = promise.always(() => {
-          return Photo.search({keywords: challenge.get('keywords'), limit: 1, pointers: true});
-        }).then(photos => {
-          if (photos.length) {
-            challenge.set('photo', photos[0]);
-          }
-        });
-      }
+    if (!challenge.get('photo')) {
+      promise = promise.always(() => {
+        return Photo.search({keywords: challenge.get('keywords'), limit: 1, pointers: true});
+      }).then(photos => {
+        if (photos.length) {
+          challenge.set('photo', photos[0]);
+        } else {
+          console.log('No photos');
+          console.log(challenge.get('keywords'));
+        }
+      }, error => {
+        console.log(error);
+      });
     }
 
     promise.always(() => {

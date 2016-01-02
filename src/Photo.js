@@ -53,7 +53,8 @@ export default class Photo extends Parse.Object {
   // search
   static search({
     challenge,
-    keywords = ['challenge'],
+    text = '',
+    keywords = [],
     limit = 20,
     pointers = false
   } = {}) {
@@ -68,9 +69,10 @@ export default class Photo extends Parse.Object {
       params: {
         method: 'flickr.photos.search',
         api_key: '1bf3ceb29fad41a1d8e5ae9839f3471d',
+        text: text,
         tags: keywords.join(','),
         license: 4,
-        sort: 'relevance',
+        sort: 'interestingness-desc',
         content_type: 1,
         media: 'photos',
         extras: 'owner_name,url_s,url_m,url_l',
