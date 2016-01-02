@@ -47,11 +47,12 @@ export default class Keyword {
     }).then(response => {
       let data = response.data;
 
-      if (data.status != 'OK') return Parse.Promise.error(data.status);
+      if (data.status != 'OK') return Parse.Promise.error(data.statusInfo);
 
       let concepts = data.concepts.map(c => c.text.toLowerCase());
-      let keywords = data.keywords.map(k => k.text.toLowerCase()).concat(concepts);
+      let keywords = data.keywords.map(k => k.text.toLowerCase());
 
+      keywords = concepts.concat(keywords);
       keywords = keywords.map(k => cleanDiacritics(k));
 
       return Parse.Promise.as(keywords);

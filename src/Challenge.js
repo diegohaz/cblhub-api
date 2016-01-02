@@ -53,6 +53,8 @@ export default class Challenge extends Parse.Object {
     view.bigIdea = this.get('bigIdea');
     view.essentialQuestion = this.get('essentialQuestion');
     view.keywords = this.get('keywords');
+    view.updatedAt = this.updatedAt;
+    view.createdAt = this.createdAt;
 
     let lists = ['contributors', 'questions', 'activities', 'resources'];
 
@@ -127,18 +129,18 @@ export default class Challenge extends Parse.Object {
 
       promise = Keyword.extract(text).then(keywords => {
         challenge.set('keywords', keywords);
+        challenge.addUnique('keywords', cleanDiacritics(challenge.get('bigIdea').toLowerCase()));
       });
     }
 
     if (!challenge.get('photo')) {
       promise = promise.always(() => {
-        return Photo.search({keywords: challenge.get('keywords'), limit: 1, pointers: true});
+        return Photo.search({challenge: challenge, limit: 1, pointers: true});
       }).then(photos => {
         if (photos.length) {
           challenge.set('photo', photos[0]);
         } else {
           console.log('No photos');
-          console.log(challenge.get('keywords'));
         }
       }, error => {
         console.log(error);
@@ -149,14 +151,6 @@ export default class Challenge extends Parse.Object {
       challenge.schematize();
       response.success();
     });
-  }
-
-  // afterSave
-  static afterSave(request) {
-    let challenge = request.object;
-
-    if (!challenge.get('keywords').length) {
-    }
   }
 
   // beforeDelete
@@ -206,7 +200,6 @@ export default class Challenge extends Parse.Object {
 Parse.Object.registerSubclass('Challenge', Challenge);
 
 Parse.Cloud.beforeSave('Challenge', Challenge.beforeSave);
-Parse.Cloud.afterSave('Challenge', Challenge.afterSave);
 Parse.Cloud.beforeDelete('Challenge', Challenge.beforeDelete);
 
 Parse.Cloud.define('getChallenge', (request, response) => {

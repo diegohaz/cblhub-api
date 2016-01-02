@@ -1,3 +1,5 @@
+import Keyword from './Keyword';
+
 export default class Photo extends Parse.Object {
   constructor(attributes, options) {
     super('Photo', attributes, options);
@@ -54,34 +56,56 @@ export default class Photo extends Parse.Object {
   static search({
     challenge,
     text = '',
-    keywords = [],
     limit = 20,
     pointers = false
   } = {}) {
-    if (challenge) {
-      keywords = challenge.get('keywords') || keywords;
+    let promise = Parse.Promise.as([]);
+
+    if (challenge && !text) {
+      promise = Keyword.extract(challenge.get('title')).then(keywords => {
+        if (keywords.length == 1) {
+          text = keywords[0];
+          return Parse.Promise.as([]);
+        } else if (keywords.length) {
+          return Parse.Promise.as(keywords.slice(0, 10));
+        } else {
+          return Parse.Promise.error();
+        }
+      }).fail(() => {
+        if (challenge.get('keywords') && challenge.get('keywords').length) {
+          return Parse.Promise.as(challenge.get('keywords').slice(0, 10));
+        } else {
+          text = challenge.get('bigIdea');
+          return Parse.Promise.as([]);
+        }
+      });
     }
 
-    keywords = keywords.length > 10 ? keywords.slice(0, 10) : keywords;
+    return promise.then(keywords => {
+      console.log('Searching photos...');
+      console.log(text);
+      console.log(keywords);
 
-    return Parse.Cloud.httpRequest({
-      url: 'https://api.flickr.com/services/rest/',
-      params: {
-        method: 'flickr.photos.search',
-        api_key: '1bf3ceb29fad41a1d8e5ae9839f3471d',
-        text: text,
-        tags: keywords.join(','),
-        license: 4,
-        sort: 'interestingness-desc',
-        content_type: 1,
-        media: 'photos',
-        extras: 'owner_name,url_s,url_m,url_l',
-        per_page: limit,
-        format: 'json',
-        nojsoncallback: 1
-      }
+      return Parse.Cloud.httpRequest({
+        url: 'https://api.flickr.com/services/rest/',
+        params: {
+          method: 'flickr.photos.search',
+          api_key: '1bf3ceb29fad41a1d8e5ae9839f3471d',
+          text: text,
+          tags: keywords.join(','),
+          sort: 'relevance',
+          license: '1,2,3,4,5,6',
+          content_type: 6,
+          media: 'photos',
+          extras: 'owner_name,url_s,url_m,url_l',
+          per_page: limit,
+          format: 'json',
+          nojsoncallback: 1
+        }
+      });
     }).then(response => {
       let data = response.data;
+      console.log(data);
 
       if (data.stat != 'ok') return Parse.Promise.error(data.stat);
 
