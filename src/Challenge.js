@@ -129,6 +129,7 @@ export default class Challenge extends Parse.Object {
 
       promise = Keyword.extract(text).then(keywords => {
         challenge.set('keywords', keywords);
+      }).always(() => {
         challenge.addUnique('keywords', cleanDiacritics(challenge.get('bigIdea').toLowerCase()));
       });
     }
