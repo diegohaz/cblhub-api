@@ -56,7 +56,7 @@ export default class Photo extends Parse.Object {
   static search({
     challenge,
     text = '',
-    limit = 20,
+    limit = 24,
     pointers = false
   } = {}) {
     let promise = Parse.Promise.as([]);
