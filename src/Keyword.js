@@ -54,6 +54,7 @@ export default class Keyword {
 
       keywords = concepts.concat(keywords);
       keywords = keywords.map(k => cleanDiacritics(k));
+      keywords = _.uniq(keywords);
 
       return Parse.Promise.as(keywords);
     });
