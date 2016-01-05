@@ -54,7 +54,7 @@ export default class Challenge extends Parse.Object {
     view.description = this.get('description');
     view.bigIdea = this.get('bigIdea');
     view.essentialQuestion = this.get('essentialQuestion');
-    view.keywords = _.uniq(this.get('titleKeywords').concat(this.get('keywords')));
+    view.keywords = _.uniq(this.get('keywords').concat(this.get('titleKeywords')));
     view.updatedAt = this.updatedAt;
     view.createdAt = this.createdAt;
 
