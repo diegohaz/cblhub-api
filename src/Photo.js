@@ -76,6 +76,9 @@ export default class Photo extends Parse.Object {
           text = keywords[0];
           return Parse.Promise.as([]);
         } else if (keywords.length) {
+          if (challenge.get('keywords') && challenge.get('keywords').length) {
+            keywords.unshift(challenge.get('keywords')[0]);
+          }
           return Parse.Promise.as(keywords);
         } else if (challenge.get('keywords') && challenge.get('keywords').length) {
           return Parse.Promise.as(challenge.get('keywords'));
