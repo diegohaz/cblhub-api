@@ -1,5 +1,4 @@
 import Challenge from './Challenge';
-import Keyword from './Keyword';
 
 export default class Photo extends Parse.Object {
   constructor(attributes, options) {
@@ -55,42 +54,41 @@ export default class Photo extends Parse.Object {
   static search({
     challenge,
     text = '',
-    limit = 24,
+    limit = 30,
     pointers = false
   } = {}) {
     let promise = Parse.Promise.as([]);
 
-    if (typeof challenge == 'string') {
-      promise = promise.then(() => {
-        return Challenge.createWithoutData(challenge).fetch();
-      }).then(function(object) {
-        challenge = object;
-      });
-    }
-
     if (challenge && !text) {
+      // if it's challenge id
+      if (typeof challenge == 'string') {
+        promise = promise.then(() => {
+          return Challenge.createWithoutData(challenge).fetch();
+        }).then(function(object) {
+          challenge = object;
+        });
+      }
+
       promise = promise.then(() => {
-        return Keyword.extract(challenge.get('title'));
-      }).then(keywords => {
+        let keywords = challenge.get('titleKeywords');
+
         if (keywords.length == 1) {
           text = keywords[0];
           return Parse.Promise.as([]);
         } else if (keywords.length) {
-          return Parse.Promise.as(keywords.slice(0, 10));
+          return Parse.Promise.as(keywords);
+        } else if (challenge.get('keywords') && challenge.get('keywords').length) {
+          return Parse.Promise.as(challenge.get('keywords'));
         } else {
-          return Parse.Promise.error();
-        }
-      }).fail(() => {
-        if (challenge.get('keywords') && challenge.get('keywords').length) {
-          return Parse.Promise.as(challenge.get('keywords').slice(0, 10));
-        } else {
-          text = challenge.get('bigIdea');
+          text = challenge.get('bigIdea').toLowerCase();
           return Parse.Promise.as([]);
         }
       });
     }
 
     return promise.then(keywords => {
+      keywords = keywords.slice(0, 10);
+
       console.log('Searching photos...');
       console.log(text);
       console.log(keywords);

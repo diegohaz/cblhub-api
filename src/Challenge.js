@@ -1,6 +1,7 @@
 import User from './User';
 import Photo from './Photo';
 import Contribution from './Contribution';
+import Contributor from './Contributor';
 import Question from './Question';
 import Activity from './Activity';
 import Resource from './Resource';
@@ -28,6 +29,7 @@ export default class Challenge extends Parse.Object {
     this.get('bigIdea')           || this.set('bigIdea', '');
     this.get('essentialQuestion') || this.set('essentialQuestion', '');
     this.get('keywords')          || this.set('keywords', []);
+    this.get('titleKeywords')     || this.set('titleKeywords', []);
     this.get('contributors')      || this.set('contributors', []);
     this.get('questions')         || this.set('questions', []);
     this.get('activities')        || this.set('activities', []);
@@ -52,7 +54,7 @@ export default class Challenge extends Parse.Object {
     view.description = this.get('description');
     view.bigIdea = this.get('bigIdea');
     view.essentialQuestion = this.get('essentialQuestion');
-    view.keywords = this.get('keywords');
+    view.keywords = _.uniq(this.get('titleKeywords').concat(this.get('keywords')));
     view.updatedAt = this.updatedAt;
     view.createdAt = this.createdAt;
 
@@ -94,8 +96,8 @@ export default class Challenge extends Parse.Object {
     let challenges = new Parse.Query(this);
 
     // constraints
-    user        && challenges.equalTo('user', user);
-    contributor && challenges.equalTo('contributors', contributor);
+    user        && challenges.equalTo('user', User.createWithoutData(user));
+    contributor && challenges.equalTo('contributors', Contributor.createWithoutData(contributor));
 
     if (keywords) {
       keywords = keywords.map(k => cleanDiacritics(k.toLowerCase()));
@@ -119,21 +121,35 @@ export default class Challenge extends Parse.Object {
 
     if (!challenge.get('title')) return response.error('Empty title');
 
+    // if title, description, bigIdea or essentialQuestion are dirty
     if (_.find(challenge.dirtyKeys(), k => ~challenge.indexes.indexOf(k))) {
       challenge.set('title', clean(challenge.get('title')));
       challenge.set('description', clean(challenge.get('description')));
       challenge.set('bigIdea', clean(challenge.get('bigIdea')));
       challenge.set('essentialQuestion', clean(challenge.get('essentialQuestion')));
 
+      // get keywords for title
+      if (challenge.dirty('title')) {
+        promise = promise.always(() => {
+          return Keyword.extract(challenge.get('title'));
+        }).then(keywords => {
+          challenge.set('titleKeywords', keywords);
+        });
+      }
+
       let text = challenge.indexes.map(k => challenge.get(k)).join('\n');
 
-      promise = Keyword.extract(text).then(keywords => {
+      // get keywords for all
+      promise = promise.always(() => {
+        return Keyword.extract(text);
+      }).then(keywords => {
         challenge.set('keywords', keywords);
       }).always(() => {
         challenge.addUnique('keywords', cleanDiacritics(challenge.get('bigIdea').toLowerCase()));
       });
     }
 
+    // get photo
     if (!challenge.get('photo')) {
       promise = promise.always(() => {
         return Photo.search({challenge: challenge, limit: 1, pointers: true});
