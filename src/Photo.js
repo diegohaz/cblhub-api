@@ -1,3 +1,4 @@
+import Challenge from './Challenge';
 import Keyword from './Keyword';
 
 export default class Photo extends Parse.Object {
@@ -27,8 +28,6 @@ export default class Photo extends Parse.Object {
 
   // view
   view() {
-    if (!this.createdAt) return;
-
     let view = {};
 
     view.small = this.get('small');
@@ -61,8 +60,18 @@ export default class Photo extends Parse.Object {
   } = {}) {
     let promise = Parse.Promise.as([]);
 
+    if (typeof challenge == 'string') {
+      promise = promise.then(() => {
+        return Challenge.createWithoutData(challenge).fetch();
+      }).then(function(object) {
+        challenge = object;
+      });
+    }
+
     if (challenge && !text) {
-      promise = Keyword.extract(challenge.get('title')).then(keywords => {
+      promise = promise.then(() => {
+        return Keyword.extract(challenge.get('title'));
+      }).then(keywords => {
         if (keywords.length == 1) {
           text = keywords[0];
           return Parse.Promise.as([]);
