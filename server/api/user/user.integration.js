@@ -26,7 +26,7 @@ describe('User API', function () {
         .get('/users')
         .query({access_token: adminSession.token})
         .expect(200)
-        .then(res => res.body.should.be.instanceOf(Array))
+        .then(({body}) => body.should.be.instanceOf(Array))
     })
 
     it('should respond with array to query page when authenticated as admin', function () {
@@ -34,7 +34,7 @@ describe('User API', function () {
         .get('/users')
         .query({access_token: adminSession.token, page: 2, limit: 1})
         .expect(200)
-        .then(res => res.body.should.be.instanceOf(Array).with.lengthOf(1))
+        .then(({body}) => body.should.be.instanceOf(Array).with.lengthOf(1))
     })
 
     it('should respond with array to query q when authenticated as admin', function () {
@@ -42,8 +42,8 @@ describe('User API', function () {
         .get('/users')
         .query({access_token: adminSession.token, q: 'fake user'})
         .expect(200)
-        .then(res => {
-          res.body.should.be.instanceOf(Array).with.lengthOf(2)
+        .then(({body}) => {
+          body.should.be.instanceOf(Array).with.lengthOf(2)
         })
     })
 
@@ -52,9 +52,9 @@ describe('User API', function () {
         .get('/users')
         .query({access_token: adminSession.token, fields: 'name'})
         .expect(200)
-        .then(res => {
-          res.body.should.be.instanceOf(Array)
-          Object.keys(res.body[0]).should.be.deep.equal(['id', 'name'])
+        .then(({body}) => {
+          body.should.be.instanceOf(Array)
+          Object.keys(body[0]).should.be.deep.equal(['id', 'name'])
         })
     })
 
@@ -79,7 +79,7 @@ describe('User API', function () {
         .get('/users/me')
         .query({access_token: userSession.token})
         .expect(200)
-        .then(res => res.body.should.have.property('id', userSession.user.id))
+        .then(({body}) => body.should.have.property('id', userSession.user.id))
     })
 
     it('should fail 401 when not authenticated', function () {
@@ -96,7 +96,7 @@ describe('User API', function () {
       return request(app)
         .get('/users/' + user.id)
         .expect(200)
-        .then(res => res.body.should.have.property('id', user.id))
+        .then(({body}) => body.should.have.property('id', user.id))
     })
 
     it('should fail 404 when user does not exist', function () {
@@ -114,9 +114,9 @@ describe('User API', function () {
         .post('/users')
         .send({access_token: adminSession.token, email: 'a@a.com', password: 'pass'})
         .expect(201)
-        .then(res => {
-          user = res.body
-          res.body.should.have.property('id')
+        .then(({body}) => {
+          user = body
+          body.should.have.property('id')
         })
     })
 
@@ -144,7 +144,7 @@ describe('User API', function () {
         .query({access_token: userSession.token})
         .send({password: 'passsss'})
         .expect(200)
-        .then(res => res.body.should.have.property('id', userSession.user.id))
+        .then(({body}) => body.should.have.property('id', userSession.user.id))
     })
 
     it('should fail 401 when not authenticated', function () {
@@ -164,7 +164,7 @@ describe('User API', function () {
         .query({access_token: adminSession.token})
         .send({name: 'Fake User 2', email: 'test2@example.com'})
         .expect(200)
-        .then(res => res.body.should.have.property('name', 'Fake User 2'))
+        .then(({body}) => body.should.have.property('name', 'Fake User 2'))
     })
 
     it('should respond with the updated user when authenticated as the same', function () {
@@ -173,7 +173,7 @@ describe('User API', function () {
         .query({access_token: userSession.token})
         .send({country: 'US', password: 'passsss'})
         .expect(200)
-        .then(res => res.body.should.have.property('id', userSession.user.id))
+        .then(({body}) => body.should.have.property('id', userSession.user.id))
     })
 
     it('should fail 400 when set another user password', function () {

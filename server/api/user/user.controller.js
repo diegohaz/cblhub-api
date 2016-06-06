@@ -4,76 +4,51 @@ import _ from 'lodash'
 import {success, error, notFound} from '../../services/response/'
 import User from './user.model'
 
-// Gets a list of Users
-export function index ({querymen}, res) {
-  const {query, select, cursor} = querymen
-
-  return User
-    .find(query, select, cursor)
-    .then(users => users.map(t => t.view()))
+export const index = ({querymen: {query, select, cursor}}, res) =>
+  User.find(query, select, cursor)
+    .then((users) => users.map((user) => user.view()))
     .then(success(res))
     .catch(error(res))
-}
 
-// Get single User
-export function show ({params}, res, next) {
-  return User
-    .findById(params.id)
+export const show = ({params}, res) =>
+  User.findById(params.id)
     .then(notFound(res))
-    .then(user => user ? user.view() : null)
+    .then((user) => user ? user.view() : null)
     .then(success(res))
     .catch(error(res))
-}
 
-// Get my info
-export function me ({user}, res, next) {
+export const me = ({user}, res) =>
   res.json(user.view(true))
-}
 
-// Creates a new User in the DB
-export function create ({body}, res) {
-  return User
-    .create(body)
-    .then(user => user.view(true))
+export const create = ({body}, res) =>
+  User.create(body)
+    .then((user) => user.view(true))
     .then(success(res, 201))
     .catch(error(res))
-}
 
-// Updates an existing User in the DB
-export function update (req, res) {
-  if (req.body._id) delete req.body._id
-  if (req.body.role) delete req.body.role
-  if (req.body.createdAt) delete req.body.createdAt
-  if (req.body.updatedAt) delete req.body.updatedAt
-
-  if (req.params.id === 'me') {
-    req.params.id = req.user.id
-  }
-
-  return User
-    .findById(req.params.id)
+export const update = ({body, params, user}, res) =>
+  User.findById(params.id === 'me' ? user.id : params.id)
     .then(notFound(res))
-    .then(user => {
-      if (req.user.role !== 'admin' && req.user.id !== user.id) {
+    .then((result) => {
+      if (!result) return result
+      const isAdmin = user.role === 'admin'
+      const isSelfUpdate = user.id === result.id
+      if (!isSelfUpdate && !isAdmin) {
         res.status(401).end()
-      } else if (req.user.role === 'admin' && req.body.password) {
+      } else if (isAdmin && body.password) {
         res.status(400).end()
       } else {
-        return user
+        return result
       }
     })
-    .then(user => user ? _.merge(user, req.body).save() : null)
-    .then(user => user ? user.view(true) : null)
+    .then((user) => user ? _.merge(user, _.omit(body, ['_id', 'role', 'createdAt', 'updatedAt'])).save() : null)
+    .then((user) => user ? user.view(true) : null)
     .then(success(res))
     .catch(error(res))
-}
 
-// Deletes a User from the DB
-export function destroy ({params}, res) {
-  return User
-    .findById(params.id)
+export const destroy = ({params}, res) =>
+  User.findById(params.id)
     .then(notFound(res))
-    .then(user => user ? user.remove() : null)
+    .then((user) => user ? user.remove() : null)
     .then(success(res, 204))
     .catch(error(res))
-}

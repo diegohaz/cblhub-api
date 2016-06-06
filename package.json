@@ -71,7 +71,7 @@
     "method-override": "^2.3.6",
     "moment": "^2.13.0",
     "mongoose": "^4.4.19",
-    "mongoose-create-unique": "^0.1.0",
+    "mongoose-create-unique": "^0.2.0",
     "mongoose-deep-populate": "^3.0.0",
     "mongoose-keywords": "^0.2.0",
     "morgan": "^1.7.0",

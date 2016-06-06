@@ -24,7 +24,7 @@ describe('Session API', function () {
         .get('/sessions')
         .query({access_token: adminSession.token})
         .expect(200)
-        .then(res => res.body.should.be.instanceOf(Array))
+        .then(({body}) => body.should.be.instanceOf(Array))
     })
 
     it('should respond with array to query page when authenticated as admin', function () {
@@ -32,7 +32,7 @@ describe('Session API', function () {
         .get('/sessions')
         .query({access_token: adminSession.token, page: 2, limit: 1})
         .expect(200)
-        .then(res => res.body.should.be.instanceOf(Array).and.have.lengthOf(1))
+        .then(({body}) => body.should.be.instanceOf(Array).and.have.lengthOf(1))
     })
 
     it('should respond with array to query q when authenticated as admin', function () {
@@ -40,7 +40,7 @@ describe('Session API', function () {
         .get('/sessions')
         .query({access_token: adminSession.token, q: 'anonymous'})
         .expect(200)
-        .then(res => res.body.should.be.instanceOf(Array).and.have.lengthOf(2))
+        .then(({body}) => body.should.be.instanceOf(Array).and.have.lengthOf(2))
     })
 
     it('should respond with array to query user when authenticated as admin', function () {
@@ -48,9 +48,9 @@ describe('Session API', function () {
         .get('/sessions')
         .query({access_token: adminSession.token, user: userSession.user.id})
         .expect(200)
-        .then(res => {
-          res.body.should.be.instanceOf(Array).and.have.lengthOf(1)
-          res.body[0].should.have.deep.property('user.id', userSession.user.id)
+        .then(({body}) => {
+          body.should.be.instanceOf(Array).and.have.lengthOf(1)
+          body[0].should.have.deep.property('user.id', userSession.user.id)
         })
     })
 
@@ -76,9 +76,9 @@ describe('Session API', function () {
         .post('/sessions')
         .auth('test@example.com', 'password')
         .expect(201)
-        .then(res => {
-          session = res.body
-          res.body.should.have.property('access_token')
+        .then(({body}) => {
+          session = body
+          body.should.have.property('access_token')
         })
     })
 
@@ -87,7 +87,7 @@ describe('Session API', function () {
         .post('/sessions')
         .auth('test@example.com', 'password')
         .expect(201)
-        .then(res => res.body.should.have.property('access_token'))
+        .then(({body}) => body.should.have.property('access_token'))
     })
 
     it('should respond with the created anonymous session', function () {
@@ -95,9 +95,9 @@ describe('Session API', function () {
         .post('/sessions')
         .auth('anonymous', 'password')
         .expect(201)
-        .then(res => {
-          anonymousSession = res.body
-          res.body.should.have.property('access_token')
+        .then(({body}) => {
+          anonymousSession = body
+          body.should.have.property('access_token')
         })
     })
 

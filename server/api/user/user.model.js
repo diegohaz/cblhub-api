@@ -37,15 +37,9 @@ const UserSchema = new Schema({
   pictureUrl: {
     type: String,
     trim: true
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
   }
+}, {
+  timestamps: true
 })
 
 UserSchema.path('email').set(function (email) {

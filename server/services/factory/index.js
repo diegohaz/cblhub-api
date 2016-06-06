@@ -4,12 +4,26 @@ import Promise from 'bluebird'
 import mongoose from 'mongoose'
 import _ from 'lodash'
 
+import Challenge from '../../api/challenge/challenge.model'
+import Photo from '../../api/photo/photo.model'
 import User from '../../api/user/user.model'
 import Tag from '../../api/tag/tag.model'
 import Session from '../../api/session/session.model'
 
 export const clean = () =>
   Promise.each(_.values(mongoose.connection.collections), (collection) => collection.remove())
+
+export const challenge = ({title = 'Make a better world', ...rest} = {}) =>
+  Challenge.create({title, user, ...rest})
+
+export const challenges = (...objects) =>
+  Promise.all(_.times(objects.length || 1, (i) => challenge(objects[i])))
+
+export const photo = (id) =>
+  id ? Photo.createUnique({_id: id}) : Photo.create({})
+
+export const photos = (...ids) =>
+  Photo.createUnique(ids.map((id) => ({_id: id})))
 
 export const user = (role = 'user') =>
   User.create({
@@ -25,13 +39,8 @@ export const users = (...roles) =>
 export const tag = (name) =>
   Tag.createUnique({name})
 
-export const tags = (...names) => {
-  let _tags = []
-  return Promise.each(names, (name, i) => {
-    _tags[i] = tag(name)
-    return _tags[i]
-  }).return(_tags).all()
-}
+export const tags = (...names) =>
+  Tag.createUnique(names.map((name) => ({name})))
 
 export const session = (role) =>
   user(role).then((user) => Session.create({user}))

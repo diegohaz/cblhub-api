@@ -1,5 +1,6 @@
 'use strict'
 
 export default {
-  WATSON_KEY: 'watsonkey'
+  WATSON_KEY: 'watsonkey',
+  FLICKR_KEY: 'flickrkey'
 }

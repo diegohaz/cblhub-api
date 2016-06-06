@@ -3,10 +3,10 @@
 import app from '../..'
 import request from 'supertest-as-promised'
 import * as factory from '../../services/factory'
-import Tag from './tag.model'
+import Challenge from './challenge.model'
 
-describe('Tag API', function () {
-  let tag, user, admin
+describe('Challenge API', function () {
+  let challenge, user, admin
 
   before(function () {
     return factory.clean()
@@ -17,22 +17,22 @@ describe('Tag API', function () {
       })
   })
 
-  describe('GET /tags', function () {
+  describe('GET /challenges', function () {
 
     before(function () {
-      return factory.tags('Anitta', 'Michael Jackson', 'Shakira')
+      return factory.challenges('Anitta', 'Michael Jackson', 'Shakira')
     })
 
     it('should respond with array', function () {
       return request(app)
-        .get('/tags')
+        .get('/challenges')
         .expect(200)
         .then(({body}) => body.should.be.instanceOf(Array))
     })
 
     it('should respond with array to pagination', function () {
       return request(app)
-        .get('/tags')
+        .get('/challenges')
         .query({page: 2, limit: 1})
         .expect(200)
         .then(({body}) => {
@@ -43,7 +43,7 @@ describe('Tag API', function () {
 
     it('should respond with array to query search', function () {
       return request(app)
-        .get('/tags')
+        .get('/challenges')
         .query({q: 'shak'})
         .expect(200)
         .then(({body}) => {
@@ -54,7 +54,7 @@ describe('Tag API', function () {
 
     it('should respond with array to sort', function () {
       return request(app)
-        .get('/tags')
+        .get('/challenges')
         .query({sort: '-name'})
         .expect(200)
         .then(({body}) => {
@@ -65,7 +65,7 @@ describe('Tag API', function () {
 
     it('should respond with array to fields', function () {
       return request(app)
-        .get('/tags')
+        .get('/challenges')
         .query({fields: '-name'})
         .expect(200)
         .then(({body}) => {
@@ -75,30 +75,30 @@ describe('Tag API', function () {
     })
   })
 
-  describe('POST /tags', function () {
+  describe('POST /challenges', function () {
 
-    it('should respond with the created tag when authenticated as admin', function () {
+    it('should respond with the created challenge when authenticated as admin', function () {
       return request(app)
-        .post('/tags')
+        .post('/challenges')
         .query({access_token: admin.token})
         .send({name: 'Shakira'})
         .expect(201)
         .then(({body}) => {
-          tag = body
-          tag.should.have.property('name', 'Shakira')
+          challenge = body
+          challenge.should.have.property('name', 'Shakira')
         })
     })
 
     it('should fail 400 when missing parameter', function () {
       return request(app)
-        .post('/tags')
+        .post('/challenges')
         .query({access_token: admin.token})
         .expect(400)
     })
 
     it('should fail 401 when authenticated as user', function () {
       return request(app)
-        .post('/tags')
+        .post('/challenges')
         .query({access_token: user.token})
         .send({name: 'Shakira'})
         .expect(401)
@@ -106,35 +106,35 @@ describe('Tag API', function () {
 
     it('should fail 401 when not authenticated', function () {
       return request(app)
-        .post('/tags')
+        .post('/challenges')
         .send({name: 'Shakira'})
         .expect(401)
     })
 
   })
 
-  describe('GET /tags/:id', function () {
+  describe('GET /challenges/:id', function () {
 
-    it('should respond with an tag', function () {
+    it('should respond with an challenge', function () {
       return request(app)
-        .get('/tags/' + tag.id)
+        .get('/challenges/' + challenge.id)
         .expect(200)
-        .then(({body}) => body.should.have.property('name', tag.name))
+        .then(({body}) => body.should.have.property('name', challenge.name))
     })
 
-    it('should fail 404 when tag does not exist', function () {
+    it('should fail 404 when challenge does not exist', function () {
       return request(app)
-        .get('/tags/123456789098765432123456')
+        .get('/challenges/123456789098765432123456')
         .expect(404)
     })
 
   })
 
-  describe('PUT /tags/:id', function () {
+  describe('PUT /challenges/:id', function () {
 
-    it('should respond with the updated tag when authenticated as admin', function () {
+    it('should respond with the updated challenge when authenticated as admin', function () {
       return request(app)
-        .put('/tags/' + tag.id)
+        .put('/challenges/' + challenge.id)
         .query({access_token: admin.token})
         .send({name: 'Watson'})
         .expect(200)
@@ -143,15 +143,15 @@ describe('Tag API', function () {
 
     it('should fail 400 when missing parameter', function () {
       return request(app)
-        .put('/tags/' + tag.id)
+        .put('/challenges/' + challenge.id)
         .query({access_token: admin.token})
         .send({name: ''})
         .expect(400)
     })
 
-    it('should fail 404 when tag does not exist', function () {
+    it('should fail 404 when challenge does not exist', function () {
       return request(app)
-        .put('/tags/123456789098765432123456')
+        .put('/challenges/123456789098765432123456')
         .query({access_token: admin.token})
         .send({name: 'Watson'})
         .expect(404)
@@ -159,7 +159,7 @@ describe('Tag API', function () {
 
     it('should fail 401 when authenticated as user', function () {
       return request(app)
-        .put('/tags/' + tag.id)
+        .put('/challenges/' + challenge.id)
         .query({access_token: user.token})
         .send({name: 'Anitta'})
         .expect(401)
@@ -167,39 +167,39 @@ describe('Tag API', function () {
 
     it('should fail 401 when not authenticated', function () {
       return request(app)
-        .put('/tags/' + tag.id)
+        .put('/challenges/' + challenge.id)
         .send({name: 'Anitta'})
         .expect(401)
     })
 
   })
 
-  describe('DELETE /tags/:id', function () {
+  describe('DELETE /challenges/:id', function () {
 
     it('should delete when authenticated as admin', function () {
       return request(app)
-        .delete('/tags/' + tag.id)
+        .delete('/challenges/' + challenge.id)
         .query({access_token: admin.token})
         .expect(204)
     })
 
-    it('should fail 404 when tag does not exist', function () {
+    it('should fail 404 when challenge does not exist', function () {
       return request(app)
-        .delete('/tags/' + tag.id)
+        .delete('/challenges/' + challenge.id)
         .query({access_token: admin.token})
         .expect(404)
     })
 
     it('should fail when authenticated as user', function () {
       return request(app)
-        .delete('/tags/' + tag.id)
+        .delete('/challenges/' + challenge.id)
         .query({access_token: user.token})
         .expect(401)
     })
 
     it('should fail when not authenticated', function () {
       return request(app)
-        .delete('/tags/' + tag.id)
+        .delete('/challenges/' + challenge.id)
         .expect(401)
     })
 

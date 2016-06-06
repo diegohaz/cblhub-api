@@ -18,6 +18,7 @@ const config = {
     port: process.env.PORT || 9000,
     ip: process.env.IP || '0.0.0.0',
     watsonKey: requireProcessEnv('WATSON_KEY'),
+    flickrKey: requireProcessEnv('FLICKR_KEY'),
     mongo: {
       options: {
         db: {

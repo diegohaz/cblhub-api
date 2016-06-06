@@ -90,7 +90,6 @@ gulp.task('test:pre', () => {
 gulp.task('test:unit', () => {
   return gulp.src(paths.test.unit)
     .pipe(mocha())
-    .pipe(istanbul())
 })
 
 gulp.task('test:integration', () => {

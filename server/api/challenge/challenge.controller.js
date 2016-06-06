@@ -2,38 +2,38 @@
 
 import _ from 'lodash'
 import {success, error, notFound} from '../../services/response/'
-import Tag from './tag.model'
+import Challenge from './challenge.model'
 
 export const index = ({querymen: {query, select, cursor}}, res) =>
-  Tag.find(query, select, cursor)
-    .then((tags) => tags.map((tag) => tag.view()))
+  Challenge.find(query, select, cursor)
+    .then((challenges) => challenges.map((challenge) => challenge.view()))
     .then(success(res))
     .catch(error(res))
 
 export const show = ({params}, res) =>
-  Tag.findById(params.id)
+  Challenge.findById(params.id)
     .then(notFound(res))
-    .then((tag) => tag ? tag.view() : null)
+    .then((challenge) => challenge ? challenge.view() : null)
     .then(success(res))
     .catch(error(res))
 
 export const create = ({body}, res) =>
-  Tag.createUnique(body)
-    .then((tag) => tag.view())
+  Challenge.createUnique(body)
+    .then((challenge) => challenge.view())
     .then(success(res, 201))
     .catch(error(res))
 
 export const update = ({body, params}, res) =>
-  Tag.findById(params.id)
+  Challenge.findById(params.id)
     .then(notFound(res))
-    .then((tag) => tag ? _.assign(tag, _.omit(body, '_id')).save() : null)
-    .then((tag) => tag ? tag.view() : null)
+    .then((challenge) => challenge ? _.assign(challenge, _.omit(body, '_id')).save() : null)
+    .then((challenge) => challenge ? challenge.view() : null)
     .then(success(res))
     .catch(error(res))
 
 export const destroy = ({params}, res) =>
-  Tag.findById(params.id)
+  Challenge.findById(params.id)
     .then(notFound(res))
-    .then((tag) => tag ? tag.remove() : null)
+    .then((challenge) => challenge ? challenge.remove() : null)
     .then(success(res, 204))
     .catch(error(res))
