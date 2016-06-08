@@ -7,7 +7,7 @@ import {bearer} from '../../services/auth'
 
 const router = new Router()
 
-router.get('/', querymen(), index)
+router.get('/', querymen({sort: 'name'}), index)
 router.get('/:id', show)
 router.post('/', bearer({required: true, roles: ['admin']}), create)
 router.put('/:id', bearer({required: true, roles: ['admin']}), update)

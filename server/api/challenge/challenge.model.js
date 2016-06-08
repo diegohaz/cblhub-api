@@ -66,38 +66,51 @@ ChallengeSchema.path('user').set(function (user) {
 })
 
 ChallengeSchema.pre('save', function (next) {
-  const paths = ['title', 'bigIdea', 'essentialQuestion', 'description']
-  const modified = paths.map((path) => this.isModified(path)).find((modified) => !!modified)
+  const taggablePaths = this.constructor.getTaggablePaths()
+  const modified = taggablePaths.map((path) => this.isModified(path)).find(_.identity)
 
   if (modified) {
-    this.fetchTags(paths.map((path) => this[path]).join('\n\n'))
-      .then(() => next())
-      .catch(next)
+    this.assignTags().then(() => next()).catch(next)
+  } else {
+    next()
   }
 })
 
-ChallengeSchema.methods.fetchTags = function (text) {
-  return Tag.increment(this.tags, -1)
-    .then(() => getKeywords(text))
-    .then((tags) => Tag.createUnique(tags.map((name) => ({name}))))
-    .tap((tags) => { this.tags = tags })
-    .then((tags) => Tag.increment(tags))
+ChallengeSchema.methods = {
+  view (full) {
+    const {description, user, users, photo, tags, questions, activities, resources} = this
+    return {
+      ..._.pick(this, [
+        'id', 'title', 'bigIdea', 'essentialQuestion', 'createdAt', 'updatedAt'
+      ]),
+      description: full ? description : undefined,
+      user: user ? user.view() : undefined,
+      users: users ? users.map((user) => user.view()) : undefined,
+      photo: photo ? photo.view() : undefined,
+      tags: tags ? tags.map((tag) => tag.view()) : undefined,
+      questions: questions ? questions.map((question) => question.view(full)) : undefined,
+      activities: activities ? activities.map((activity) => activity.view(full)) : undefined,
+      resources: resources ? resources.map((resource) => resource.view(full)) : undefined
+    }
+  },
+
+  assignTags () {
+    return Tag.increment(this.tags, -1)
+      .then(() => this.fetchTags())
+      .then((tags) => Tag.createUnique(tags.map((name) => ({name}))))
+      .tap((tags) => { this.tags = tags })
+      .then((tags) => Tag.increment(tags))
+  },
+
+  fetchTags () {
+    const paths = this.constructor.getTaggablePaths()
+    return getKeywords(paths.map((path) => this[path]).join('\n\n'))
+  }
 }
 
-ChallengeSchema.methods.view = function (full) {
-  const {description, user, users, photo, tags, questions, activities, resources} = this
-  return {
-    ..._.pick(this, [
-      'id', 'title', 'bigIdea', 'essentialQuestion', 'createdAt', 'updatedAt'
-    ]),
-    description: full ? description : undefined,
-    user: user ? user.view() : undefined,
-    users: users ? users.map((user) => user.view()) : undefined,
-    photo: photo ? photo.view() : undefined,
-    tags: tags ? tags.map((tag) => tag.view()) : undefined,
-    questions: questions ? questions.map((question) => question.view(full)) : undefined,
-    activities: activities ? activities.map((activity) => activity.view(full)) : undefined,
-    resources: resources ? resources.map((resource) => resource.view(full)) : undefined
+ChallengeSchema.statics = {
+  getTaggablePaths () {
+    return ['title', 'bigIdea', 'essentialQuestion', 'description']
   }
 }
 

@@ -1,5 +1,6 @@
 'use strict'
 
+import vcr from 'nock-vcr-recorder'
 import Promise from 'bluebird'
 import mongoose from 'mongoose'
 import _ from 'lodash'
@@ -13,8 +14,13 @@ import Session from '../../api/session/session.model'
 export const clean = () =>
   Promise.each(_.values(mongoose.connection.collections), (collection) => collection.remove())
 
-export const challenge = ({title = 'Make a better world', ...rest} = {}) =>
-  Challenge.create({title, user, ...rest})
+export const challenge = ({
+  title = 'Make people happy',
+  bigIdea = 'Peace',
+  essentialQuestion = 'How can we make the World a better place?',
+  ...rest
+} = {}) =>
+    Challenge.create({title, bigIdea, essentialQuestion, ...rest})
 
 export const challenges = (...objects) =>
   Promise.all(_.times(objects.length || 1, (i) => challenge(objects[i])))

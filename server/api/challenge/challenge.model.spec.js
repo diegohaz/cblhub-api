@@ -1,31 +1,36 @@
 'use strict'
 
-import vcr from 'nock-vcr-recorder-mocha'
+import _ from 'lodash'
 import app from '../../'
 import * as factory from '../../services/factory'
+import Challenge from './challenge.model'
+import Tag from '../tag/tag.model'
 
 describe('Challenge Model', function () {
-  let user, challenge
+  let user, challenge, fetchTags
 
   before(function () {
+    fetchTags = sinon.stub(Challenge.prototype, 'fetchTags', function () {
+      const taggablePaths = Challenge.getTaggablePaths()
+      const tags = taggablePaths.map((path) => _.kebabCase(this[path])).filter(_.identity)
+      return tags
+    })
+  })
+
+  after(function () {
+    fetchTags.restore()
+  })
+
+  beforeEach(function () {
     return factory.clean()
       .then(() => factory.user())
-      .then((u) => {
-        user = u
-      })
+      .tap((u) => { user = u })
+      .then((user) => factory.challenge({user}))
+      .then((c) => { challenge = c })
   })
 
   afterEach(function () {
     return factory.clean()
-  })
-
-  vcr.it('should return a view', function () {
-    return factory.challenge({user})
-      .tap((c) => { challenge = c })
-      .then((challenge) => challenge.view())
-      .then((view) => {
-        view.should.have.property('id')
-      })
   })
 
   it('should update users when set user', function () {
@@ -39,6 +44,84 @@ describe('Challenge Model', function () {
         challenge.users.should.have.lengthOf(1)
         challenge.users[0].should.be.equal(newUser._id)
       })
+  })
+
+  it('should return a view', function () {
+    const view = challenge.view()
+    view.should.have.property('id').which.is.a('string')
+    view.should.have.property('title').which.is.a('string')
+    view.should.have.property('bigIdea')
+    view.should.have.property('essentialQuestion')
+    view.should.have.property('createdAt').which.is.instanceof(Date)
+    view.should.have.property('updatedAt').which.is.instanceof(Date)
+    view.should.have.property('user').which.exist
+    view.should.have.property('users').which.exist
+    view.should.have.property('photo')
+    view.should.have.property('tags').which.have.lengthOf(3)
+    view.should.have.property('questions').which.is.a('array')
+    view.should.have.property('activities').which.is.a('array')
+    view.should.have.property('resources').which.is.a('array')
+  })
+
+  it('should assign tags', function () {
+    let tags
+    return challenge.populate('tags').execPopulate().then(() => {
+      tags = challenge.tags
+      tags.should.all.have.property('count', 1)
+      challenge.title = 'Testing'
+      return challenge.save()
+    }).then((challenge) => {
+      return challenge.populate('tags').execPopulate()
+    }).then((challenge) => {
+      challenge.tags.should.all.have.property('count', 1)
+      return Tag.findById(tags[0]._id)
+    }).then((tag) => {
+      tag.should.have.property('count', 0)
+    })
+  })
+
+  describe('Pre save', function () {
+    let assignTags
+
+    before(function () {
+      assignTags = sinon.spy(Challenge.prototype, 'assignTags')
+    })
+
+    beforeEach(function () {
+      assignTags.reset()
+    })
+
+    after(function () {
+      assignTags.restore()
+    })
+
+    it('should not assign new tags when challenge is saved', function () {
+      return challenge.save().then(() => {
+        assignTags.should.have.not.been.called
+      })
+    })
+
+    it('should not assign new tags when challenge is saved with some path', function () {
+      return factory.photo()
+        .then((photo) => {
+          challenge.photo = photo
+          challenge.save()
+        })
+        .then((challenge) => {
+          assignTags.should.have.not.been.called
+        })
+    })
+
+    const taggablePaths = Challenge.getTaggablePaths()
+
+    taggablePaths.forEach((path) => {
+      it(`should assign new tags when challenge is saved with new ${path}`, function () {
+        challenge[path] = 'Testing'
+        return challenge.save().then(() => {
+          assignTags.should.have.been.calledOnce
+        })
+      })
+    })
   })
 
 })

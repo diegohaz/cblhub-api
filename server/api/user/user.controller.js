@@ -26,8 +26,9 @@ export const create = ({body}, res) =>
     .then(success(res, 201))
     .catch(error(res))
 
-export const update = ({body, params, user}, res) =>
-  User.findById(params.id === 'me' ? user.id : params.id)
+export const update = ({body, params, user}, res) => {
+  const omittedPaths = ['_id', 'role', 'createdAt', 'updatedAt']
+  return User.findById(params.id === 'me' ? user.id : params.id)
     .then(notFound(res))
     .then((result) => {
       if (!result) return result
@@ -41,10 +42,11 @@ export const update = ({body, params, user}, res) =>
         return result
       }
     })
-    .then((user) => user ? _.merge(user, _.omit(body, ['_id', 'role', 'createdAt', 'updatedAt'])).save() : null)
+    .then((user) => user ? _.merge(user, _.omit(body, omittedPaths)).save() : null)
     .then((user) => user ? user.view(true) : null)
     .then(success(res))
     .catch(error(res))
+}
 
 export const destroy = ({params}, res) =>
   User.findById(params.id)

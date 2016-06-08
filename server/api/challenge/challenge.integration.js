@@ -6,9 +6,10 @@ import * as factory from '../../services/factory'
 import Challenge from './challenge.model'
 
 describe('Challenge API', function () {
-  let challenge, user, admin
+  let fetchTags, challenge, user, admin
 
   before(function () {
+    fetchTags = sinon.stub(Challenge.prototype, 'fetchTags', () => ['foo', 'bar', 'baz'])
     return factory.clean()
       .then(() => factory.sessions('user', 'admin'))
       .spread((u, a) => {
@@ -17,10 +18,20 @@ describe('Challenge API', function () {
       })
   })
 
+  after(function () {
+    fetchTags.restore()
+  })
+
+  beforeEach(function () {
+    fetchTags.reset()
+  })
+
   describe('GET /challenges', function () {
 
     before(function () {
-      return factory.challenges('Anitta', 'Michael Jackson', 'Shakira')
+      return factory.challenges({user}, {user})
+        .then(() => factory.challenge({bigIdea: 'Testing', user}))
+        .then(() => factory.challenge({user: admin}))
     })
 
     it('should respond with array', function () {
@@ -37,77 +48,69 @@ describe('Challenge API', function () {
         .expect(200)
         .then(({body}) => {
           body.should.be.instanceOf(Array).and.have.lengthOf(1)
-          body[0].should.have.property('name', 'Michael Jackson')
+          body[0].should.have.property('bigIdea', 'Testing')
         })
     })
 
     it('should respond with array to query search', function () {
       return request(app)
         .get('/challenges')
-        .query({q: 'shak'})
+        .query({q: 'testing'})
         .expect(200)
         .then(({body}) => {
           body.should.be.instanceOf(Array).and.have.lengthOf(1)
-          body[0].should.have.property('name', 'Shakira')
+          body[0].should.have.property('bigIdea', 'Testing')
         })
     })
 
     it('should respond with array to sort', function () {
       return request(app)
         .get('/challenges')
-        .query({sort: '-name'})
+        .query({sort: '-bigIdea'})
         .expect(200)
         .then(({body}) => {
-          body.should.be.instanceOf(Array).and.have.lengthOf(3)
-          body[0].should.have.property('name', 'Shakira')
+          body.should.be.instanceOf(Array).and.have.lengthOf(4)
+          body[0].should.have.property('bigIdea', 'Testing')
         })
     })
 
     it('should respond with array to fields', function () {
       return request(app)
         .get('/challenges')
-        .query({fields: '-name'})
+        .query({fields: '-bigIdea'})
         .expect(200)
         .then(({body}) => {
-          body.should.be.instanceOf(Array).and.have.lengthOf(3)
-          body.should.all.not.have.property('name')
+          body.should.be.instanceOf(Array).and.have.lengthOf(4)
+          body.should.all.not.have.property('bigIdea')
         })
     })
   })
 
   describe('POST /challenges', function () {
 
-    it('should respond with the created challenge when authenticated as admin', function () {
+    it('should respond with the created challenge when authenticated as user', function () {
       return request(app)
         .post('/challenges')
-        .query({access_token: admin.token})
-        .send({name: 'Shakira'})
+        .query({access_token: user.token})
+        .send({title: 'Testing'})
         .expect(201)
         .then(({body}) => {
           challenge = body
-          challenge.should.have.property('name', 'Shakira')
+          challenge.should.have.property('title', 'Testing')
         })
     })
 
     it('should fail 400 when missing parameter', function () {
       return request(app)
         .post('/challenges')
-        .query({access_token: admin.token})
-        .expect(400)
-    })
-
-    it('should fail 401 when authenticated as user', function () {
-      return request(app)
-        .post('/challenges')
         .query({access_token: user.token})
-        .send({name: 'Shakira'})
-        .expect(401)
+        .expect(400)
     })
 
     it('should fail 401 when not authenticated', function () {
       return request(app)
         .post('/challenges')
-        .send({name: 'Shakira'})
+        .send({title: 'Testing'})
         .expect(401)
     })
 
@@ -119,7 +122,9 @@ describe('Challenge API', function () {
       return request(app)
         .get('/challenges/' + challenge.id)
         .expect(200)
-        .then(({body}) => body.should.have.property('name', challenge.name))
+        .then(({body}) => {
+          body.should.have.property('title', challenge.title)
+        })
     })
 
     it('should fail 404 when challenge does not exist', function () {
@@ -136,39 +141,54 @@ describe('Challenge API', function () {
       return request(app)
         .put('/challenges/' + challenge.id)
         .query({access_token: admin.token})
-        .send({name: 'Watson'})
+        .send({title: 'Watson'})
         .expect(200)
-        .then(({body}) => body.should.have.property('name', 'Watson'))
+        .then(({body}) => {
+          body.should.have.property('title', 'Watson')
+        })
+    })
+
+    it('should respond with the updated challenge when authenticated as same user', function () {
+      return request(app)
+        .put('/challenges/' + challenge.id)
+        .query({access_token: user.token})
+        .send({title: 'IBM'})
+        .expect(200)
+        .then(({body}) => {
+          body.should.have.property('title', 'IBM')
+        })
     })
 
     it('should fail 400 when missing parameter', function () {
       return request(app)
         .put('/challenges/' + challenge.id)
-        .query({access_token: admin.token})
-        .send({name: ''})
+        .query({access_token: user.token})
+        .send({title: ''})
         .expect(400)
     })
 
     it('should fail 404 when challenge does not exist', function () {
       return request(app)
         .put('/challenges/123456789098765432123456')
-        .query({access_token: admin.token})
-        .send({name: 'Watson'})
+        .query({access_token: user.token})
+        .send({title: 'Watson'})
         .expect(404)
     })
 
-    it('should fail 401 when authenticated as user', function () {
-      return request(app)
-        .put('/challenges/' + challenge.id)
-        .query({access_token: user.token})
-        .send({name: 'Anitta'})
-        .expect(401)
+    it('should fail 401 when authenticated as other user', function () {
+      return factory.session().then((anotherUser) =>
+        request(app)
+          .put('/challenges/' + challenge.id)
+          .query({access_token: anotherUser.token})
+          .send({title: 'IBM'})
+          .expect(401)
+        )
     })
 
     it('should fail 401 when not authenticated', function () {
       return request(app)
         .put('/challenges/' + challenge.id)
-        .send({name: 'Anitta'})
+        .send({title: 'IBM'})
         .expect(401)
     })
 
@@ -176,25 +196,18 @@ describe('Challenge API', function () {
 
   describe('DELETE /challenges/:id', function () {
 
-    it('should delete when authenticated as admin', function () {
+    it('should delete when authenticated as user', function () {
       return request(app)
         .delete('/challenges/' + challenge.id)
-        .query({access_token: admin.token})
+        .query({access_token: user.token})
         .expect(204)
     })
 
     it('should fail 404 when challenge does not exist', function () {
       return request(app)
         .delete('/challenges/' + challenge.id)
-        .query({access_token: admin.token})
-        .expect(404)
-    })
-
-    it('should fail when authenticated as user', function () {
-      return request(app)
-        .delete('/challenges/' + challenge.id)
         .query({access_token: user.token})
-        .expect(401)
+        .expect(404)
     })
 
     it('should fail when not authenticated', function () {

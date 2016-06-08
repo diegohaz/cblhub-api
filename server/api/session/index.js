@@ -7,14 +7,7 @@ import {basic, bearer} from '../../services/auth'
 
 const router = new Router()
 
-router.get('/',
-  bearer({required: true, roles: ['admin']}),
-  querymen({
-    user: String,
-    sort: '-createdAt'
-  }),
-  index)
-
+router.get('/', bearer({required: true, roles: ['admin']}), querymen({user: String}), index)
 router.post('/', basic(), create)
 router.delete('/:token?', bearer({required: true}), destroy)
 

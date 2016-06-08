@@ -3,6 +3,7 @@
 import mongoose, {Schema} from 'mongoose'
 import mongooseKeywords from 'mongoose-keywords'
 import mongooseCreateUnique from 'mongoose-create-unique'
+import Promise from 'bluebird'
 
 const TagSchema = new Schema({
   name: {
@@ -24,7 +25,14 @@ TagSchema.methods.view = function () {
 }
 
 TagSchema.statics.increment = function (tags, amount = 1) {
-  return this.update(tags, {$inc: {count: amount}}, {multi: true}).exec()
+  if (!tags.length) {
+    return Promise.resolve()
+  }
+  return this.update(
+    {_id: {$in: tags.map(({_id}) => _id)}},
+    {$inc: {count: amount}},
+    {multi: true}
+  ).exec()
 }
 
 TagSchema.plugin(mongooseKeywords, {paths: ['name']})

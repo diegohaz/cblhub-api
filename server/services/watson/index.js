@@ -6,7 +6,7 @@ import {watsonKey as apikey} from '../../config'
 
 export const getKeywords = (text) =>
   request({
-    uri: 'http://gateway-a.watsonplatform.net/calls/text/TextGetCombinedData',
+    uri: 'https://gateway-a.watsonplatform.net/calls/text/TextGetCombinedData',
     json: true,
     qs: {
       apikey,
