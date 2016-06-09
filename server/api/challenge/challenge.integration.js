@@ -9,21 +9,12 @@ describe('Challenge API', function () {
   let fetchTags, challenge, user, admin
 
   before(function () {
-    fetchTags = sinon.stub(Challenge.prototype, 'fetchTags', () => ['foo', 'bar', 'baz'])
     return factory.clean()
       .then(() => factory.sessions('user', 'admin'))
       .spread((u, a) => {
         user = u
         admin = a
       })
-  })
-
-  after(function () {
-    fetchTags.restore()
-  })
-
-  beforeEach(function () {
-    fetchTags.reset()
   })
 
   describe('GET /challenges', function () {
@@ -38,7 +29,9 @@ describe('Challenge API', function () {
       return request(app)
         .get('/challenges')
         .expect(200)
-        .then(({body}) => body.should.be.instanceOf(Array))
+        .then(({body}) => {
+          body.should.be.instanceOf(Array)
+        })
     })
 
     it('should respond with array to pagination', function () {

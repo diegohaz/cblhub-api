@@ -10,15 +10,14 @@ const ChallengeSchema = new Schema({
   user: {
     type: Schema.ObjectId,
     ref: 'User',
-    index: true,
-    required: true
+    index: true
   },
   users: [{
     type: Schema.ObjectId,
     ref: 'User'
   }],
   photo: {
-    type: Schema.ObjectId,
+    type: String,
     ref: 'Photo'
   },
   tags: [{

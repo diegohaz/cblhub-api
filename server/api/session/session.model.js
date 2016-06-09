@@ -29,38 +29,40 @@ SessionSchema.pre('save', function (next) {
   next()
 })
 
-SessionSchema.methods.view = function (full) {
-  return full ? {
-    user: this.user.view(),
-    access_token: this.token
-  } : {
-    user: this.user.view()
+SessionSchema.methods = {
+  view (full) {
+    return full ? {
+      user: this.user.view(),
+      token: this.token
+    } : {
+      user: this.user.view()
+    }
+  },
+
+  expired () {
+    return moment().isSameOrAfter(this.expiresAt)
+  },
+
+  updateExpirationTime (done) {
+    return this.save(done)
   }
 }
 
-SessionSchema.methods.expired = function () {
-  return moment().isSameOrAfter(this.expiresAt)
-}
+SessionSchema.statics = {
+  login (token) {
+    const Session = mongoose.model('Session')
+    return Session.findOne({token}).populate('user').then((session) => {
+      if (!session) throw new Error('Invalid session')
 
-SessionSchema.methods.updateExpirationTime = function (done) {
-  return this.save(done)
-}
+      if (session.expired()) {
+        session.remove()
+        throw new Error('Session has expired')
+      }
 
-SessionSchema.statics.login = function (token) {
-  const Session = mongoose.model('Session')
-
-  return Session.findOne({token}).populate('user').then(session => {
-    if (!session) throw new Error('Invalid session')
-
-    if (session.expired()) {
-      session.remove()
-      throw new Error('Session has expired')
-    }
-
-    session.updateExpirationTime()
-
-    return session
-  })
+      session.updateExpirationTime()
+      return session
+    })
+  }
 }
 
 SessionSchema.plugin(mongooseKeywords, {paths: ['user']})

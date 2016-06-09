@@ -21,7 +21,7 @@ describe('Session Model', function () {
     return factory.session().then(session => {
       var view = session.view(true)
       view.should.have.property('user')
-      view.should.have.property('access_token')
+      view.should.have.property('token')
     })
   })
 

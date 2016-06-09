@@ -6,6 +6,7 @@ import Challenge from './challenge.model'
 
 export const index = ({querymen: {query, select, cursor}}, res) =>
   Challenge.find(query, select, cursor)
+    .populate('user tags')
     .then((challenges) => challenges.map((challenge) => challenge.view()))
     .then(success(res))
     .catch(error(res))
@@ -19,7 +20,7 @@ export const show = ({params}, res) =>
     .catch(error(res))
 
 export const create = ({body, user}, res) => {
-  body.user = body.user || user
+  body.user = user
   return Challenge.create(body)
     .then((challenge) => challenge.view(true))
     .then(success(res, 201))
@@ -27,7 +28,7 @@ export const create = ({body, user}, res) => {
 }
 
 export const update = ({body, params, user}, res) => {
-  const omittedPaths = ['_id', 'users', 'createdAt', 'updatedAt']
+  const pick = ['title', 'bigIdea', 'essentialQuestion', 'description', 'photo', 'user', 'tags']
   return Challenge.findById(params.id)
     .then(notFound(res))
     .then((challenge) => {
@@ -40,7 +41,7 @@ export const update = ({body, params, user}, res) => {
         return challenge
       }
     })
-    .then((challenge) => challenge ? _.assign(challenge, _.omit(body, omittedPaths)).save() : null)
+    .then((challenge) => challenge ? _.assign(challenge, _.pick(body, pick)).save() : null)
     .then((challenge) => challenge ? challenge.view() : null)
     .then(success(res))
     .catch(error(res))

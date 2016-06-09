@@ -3,6 +3,7 @@
 import app from '../../'
 import * as factory from '../../services/factory'
 import Tag from './tag.model'
+import Challenge from '../challenge/challenge.model'
 
 describe('Tag Model', function () {
 
@@ -36,6 +37,16 @@ describe('Tag Model', function () {
       .then((tags) => Tag.increment(tags, -1))
       .then(() => Tag.find({}))
       .then((tags) => tags.should.all.have.property('count', 2))
+  })
+
+  it('should remove tag from challenges after removing tag', function () {
+    return factory.challenge({title: 'foo'})
+      .tap((challenge) => challenge.should.have.property('tags').with.lengthOf(3))
+      .then(() => Tag.findOne({name: 'foo'}))
+      .tap((tag) => tag.should.have.property('name', 'foo'))
+      .then((tag) => tag.remove())
+      .then(() => Challenge.findOne({}))
+      .then((challenge) => challenge.should.have.property('tags').with.lengthOf(2))
   })
 
 })

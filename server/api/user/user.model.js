@@ -6,6 +6,7 @@ import mongoose, {Schema} from 'mongoose'
 import mongooseKeywords from 'mongoose-keywords'
 import {env} from '../../config'
 import Session from '../session/session.model'
+import Challenge from '../challenge/challenge.model'
 
 const compare = require('bluebird').promisify(bcrypt.compare)
 const roles = ['user', 'admin']
@@ -62,34 +63,39 @@ UserSchema.pre('save', function (next) {
   })
 })
 
-UserSchema.post('remove', function (user) {
-  if (env === 'test') return
-  /* istanbul ignore next */
-  user.postRemove()
+UserSchema.pre('remove', function (next) {
+  Challenge.update(
+    {$or: [{user: this}, {users: this}]},
+    {$unset: {user: ''}, $pull: {users: this._id}},
+    {multi: true}
+  )
+  .then(() => Session.remove({user: this}))
+  .then(next)
+  .catch(next)
 })
 
-UserSchema.methods.postRemove = function () {
-  return Session.find({user: this}).exec().map(session => session.remove())
-}
+UserSchema.methods = {
+  view (full) {
+    let view = {}
+    let fields = ['id', 'name', 'pictureUrl']
 
-UserSchema.methods.view = function (full) {
-  let view = {}
-  let fields = ['id', 'name', 'pictureUrl']
+    if (full) {
+      fields = [...fields, 'email', 'createdAt']
+    }
 
-  if (full) {
-    fields = [...fields, 'email', 'createdAt']
+    fields.forEach((field) => { view[field] = this[field] })
+
+    return view
+  },
+
+  authenticate (password) {
+    return compare(password, this.password).then((valid) => valid ? this : false)
   }
-
-  fields.forEach(field => { view[field] = this[field] })
-
-  return view
 }
 
-UserSchema.methods.authenticate = function (password) {
-  return compare(password, this.password).then(valid => valid ? this : false)
+UserSchema.statics = {
+  roles
 }
-
-UserSchema.statics.roles = roles
 
 UserSchema.plugin(mongooseKeywords, {paths: ['email', 'name']})
 

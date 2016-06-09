@@ -24,7 +24,9 @@ describe('Session API', function () {
         .get('/sessions')
         .query({access_token: adminSession.token})
         .expect(200)
-        .then(({body}) => body.should.be.instanceOf(Array))
+        .then(({body}) => {
+          body.should.be.instanceOf(Array)
+        })
     })
 
     it('should respond with array to query page when authenticated as admin', function () {
@@ -32,7 +34,9 @@ describe('Session API', function () {
         .get('/sessions')
         .query({access_token: adminSession.token, page: 2, limit: 1})
         .expect(200)
-        .then(({body}) => body.should.be.instanceOf(Array).and.have.lengthOf(1))
+        .then(({body}) => {
+          body.should.be.instanceOf(Array).and.have.lengthOf(1)
+        })
     })
 
     it('should respond with array to query q when authenticated as admin', function () {
@@ -40,7 +44,9 @@ describe('Session API', function () {
         .get('/sessions')
         .query({access_token: adminSession.token, q: 'anonymous'})
         .expect(200)
-        .then(({body}) => body.should.be.instanceOf(Array).and.have.lengthOf(2))
+        .then(({body}) => {
+          body.should.be.instanceOf(Array).and.have.lengthOf(2)
+        })
     })
 
     it('should respond with array to query user when authenticated as admin', function () {
@@ -78,7 +84,7 @@ describe('Session API', function () {
         .expect(201)
         .then(({body}) => {
           session = body
-          body.should.have.property('access_token')
+          body.should.have.property('token')
         })
     })
 
@@ -87,7 +93,9 @@ describe('Session API', function () {
         .post('/sessions')
         .auth('test@example.com', 'password')
         .expect(201)
-        .then(({body}) => body.should.have.property('access_token'))
+        .then(({body}) => {
+          body.should.have.property('token')
+        })
     })
 
     it('should respond with the created anonymous session', function () {
@@ -97,7 +105,7 @@ describe('Session API', function () {
         .expect(201)
         .then(({body}) => {
           anonymousSession = body
-          body.should.have.property('access_token')
+          body.should.have.property('token')
         })
     })
 
@@ -114,7 +122,7 @@ describe('Session API', function () {
     it('should delete all sessions of the authenticated user', function () {
       return request(app)
         .delete('/sessions')
-        .query({access_token: session.access_token})
+        .query({access_token: session.token})
         .expect(204)
     })
 
@@ -154,8 +162,8 @@ describe('Session API', function () {
 
     it('should delete one session from current user when authenticated', function () {
       return request(app)
-        .delete('/sessions/' + anonymousSession.access_token)
-        .query({access_token: anonymousSession.access_token})
+        .delete('/sessions/' + anonymousSession.token)
+        .query({access_token: anonymousSession.token})
         .expect(204)
     })
 

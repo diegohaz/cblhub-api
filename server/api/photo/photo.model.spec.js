@@ -3,6 +3,7 @@
 import app from '../../'
 import * as factory from '../../services/factory'
 import Photo from './photo.model'
+import Challenge from '../challenge/challenge.model'
 
 describe('Photo Model', function () {
 
@@ -59,6 +60,16 @@ describe('Photo Model', function () {
     photo.should.have.deep.property('large.src', 'https://farm8.staticflickr.com/7454/9551387978_c3439d9e38_b.jpg')
     photo.should.have.deep.property('large.width', 1024)
     photo.should.have.deep.property('large.height', 706)
+  })
+
+  it('should remove photo from challenges after removing photo', function () {
+    const challenge = new Challenge({title: 'Testing'})
+    return factory.photo()
+      .tap((photo) => { challenge.photo = photo })
+      .then(() => challenge.save())
+      .then(() => challenge.photo.remove())
+      .then(() => Challenge.findOne({}))
+      .then((challenge) => challenge.should.have.property('photo').which.is.empty)
   })
 
 })

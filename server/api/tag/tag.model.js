@@ -4,6 +4,7 @@ import mongoose, {Schema} from 'mongoose'
 import mongooseKeywords from 'mongoose-keywords'
 import mongooseCreateUnique from 'mongoose-create-unique'
 import Promise from 'bluebird'
+import Challenge from '../challenge/challenge.model'
 
 const TagSchema = new Schema({
   name: {
@@ -19,20 +20,31 @@ const TagSchema = new Schema({
   }
 })
 
-TagSchema.methods.view = function () {
-  const {id, name} = this
-  return {id, name}
+TagSchema.pre('remove', function (next) {
+  Challenge
+    .update({tags: this}, {$pull: {tags: this._id}}, {multi: true}).exec()
+    .then(() => next())
+    .catch(next)
+})
+
+TagSchema.methods = {
+  view () {
+    const {id, name} = this
+    return {id, name}
+  }
 }
 
-TagSchema.statics.increment = function (tags, amount = 1) {
-  if (!tags.length) {
-    return Promise.resolve()
+TagSchema.statics = {
+  increment (tags, amount = 1) {
+    if (!tags.length) {
+      return Promise.resolve()
+    }
+    return this.update(
+      {_id: {$in: tags.map(({_id}) => _id)}},
+      {$inc: {count: amount}},
+      {multi: true}
+    ).exec()
   }
-  return this.update(
-    {_id: {$in: tags.map(({_id}) => _id)}},
-    {$inc: {count: amount}},
-    {multi: true}
-  ).exec()
 }
 
 TagSchema.plugin(mongooseKeywords, {paths: ['name']})

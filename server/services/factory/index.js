@@ -1,15 +1,21 @@
 'use strict'
 
-import vcr from 'nock-vcr-recorder'
 import Promise from 'bluebird'
 import mongoose from 'mongoose'
 import _ from 'lodash'
+import sinon from 'sinon'
 
 import Challenge from '../../api/challenge/challenge.model'
 import Photo from '../../api/photo/photo.model'
 import User from '../../api/user/user.model'
 import Tag from '../../api/tag/tag.model'
 import Session from '../../api/session/session.model'
+
+const fetchTags = sinon.stub(Challenge.prototype, 'fetchTags', function () {
+  const taggablePaths = Challenge.getTaggablePaths()
+  const tags = taggablePaths.map((path) => _.kebabCase(this[path])).filter(_.identity)
+  return tags
+})
 
 export const clean = () =>
   Promise.each(_.values(mongoose.connection.collections), (collection) => collection.remove())
@@ -20,7 +26,10 @@ export const challenge = ({
   essentialQuestion = 'How can we make the World a better place?',
   ...rest
 } = {}) =>
-    Challenge.create({title, bigIdea, essentialQuestion, ...rest})
+  Challenge.create({title, bigIdea, essentialQuestion, ...rest}).then((challenge) => {
+    fetchTags.reset()
+    return challenge
+  })
 
 export const challenges = (...objects) =>
   Promise.all(_.times(objects.length || 1, (i) => challenge(objects[i])))

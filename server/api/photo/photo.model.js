@@ -4,6 +4,7 @@ import {uid} from 'rand-token'
 import mongoose, {Schema} from 'mongoose'
 import mongooseKeywords from 'mongoose-keywords'
 import mongooseCreateUnique from 'mongoose-create-unique'
+import Challenge from '../challenge/challenge.model'
 
 const PhotoObjectSchema = new Schema({
   src: String,
@@ -30,44 +31,55 @@ const PhotoSchema = new Schema({
   timestamps: true
 })
 
-PhotoSchema.methods.view = function () {
-  const sizes = ['small', 'medium', 'large']
-  const {id, title, owner, url} = this
-  let view = {id, title, owner, url}
+PhotoSchema.pre('remove', function (next) {
+  Challenge
+    .update({photo: this}, {$unset: {photo: ''}}, {multi: true})
+    .then(() => next())
+    .catch(next)
+})
 
-  sizes.forEach((size) => {
-    if (!this[size]) return
-    const {src, width, height} = this[size]
-    view[size] = {src, width, height}
-  })
+PhotoSchema.methods = {
+  view () {
+    const sizes = ['small', 'medium', 'large']
+    const {id, title, owner, url} = this
+    let view = {id, title, owner, url}
 
-  return view
+    sizes.forEach((size) => {
+      if (!this[size]) return
+      const {src, width, height} = this[size]
+      view[size] = {src, width, height}
+    })
+
+    return view
+  }
 }
 
-PhotoSchema.statics.translate = function (flickrPhoto) {
-  const Photo = mongoose.model('Photo')
-  const photo = new Photo()
-  const sizes = ['small', 'medium', 'large']
+PhotoSchema.statics = {
+  translate (flickrPhoto) {
+    const Photo = mongoose.model('Photo')
+    const photo = new Photo()
+    const sizes = ['small', 'medium', 'large']
 
-  photo._id = flickrPhoto.id
-  photo.owner = flickrPhoto.ownername
-  photo.url = `https://www.flickr.com/photos/${photo.owner}/${photo._id}`
-  photo.title = flickrPhoto.title
+    photo._id = flickrPhoto.id
+    photo.owner = flickrPhoto.ownername
+    photo.url = `https://www.flickr.com/photos/${photo.owner}/${photo._id}`
+    photo.title = flickrPhoto.title
 
-  sizes.forEach((size, i) => {
-    let letter = size.charAt(0)
-    const sizeExists = !!flickrPhoto[`url_${letter}`]
-    if (!sizeExists && i > 0) {
-      letter = sizes[i - 1].charAt(0)
-    }
-    photo[size] = {
-      src: flickrPhoto[`url_${letter}`],
-      width: flickrPhoto[`width_${letter}`],
-      height: flickrPhoto[`height_${letter}`]
-    }
-  })
+    sizes.forEach((size, i) => {
+      let letter = size.charAt(0)
+      const sizeExists = !!flickrPhoto[`url_${letter}`]
+      if (!sizeExists && i > 0) {
+        letter = sizes[i - 1].charAt(0)
+      }
+      photo[size] = {
+        src: flickrPhoto[`url_${letter}`],
+        width: flickrPhoto[`width_${letter}`],
+        height: flickrPhoto[`height_${letter}`]
+      }
+    })
 
-  return photo
+    return photo
+  }
 }
 
 PhotoSchema.plugin(mongooseKeywords, {paths: ['title', 'owner']})

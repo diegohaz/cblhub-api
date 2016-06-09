@@ -7,19 +7,7 @@ import Challenge from './challenge.model'
 import Tag from '../tag/tag.model'
 
 describe('Challenge Model', function () {
-  let user, challenge, fetchTags
-
-  before(function () {
-    fetchTags = sinon.stub(Challenge.prototype, 'fetchTags', function () {
-      const taggablePaths = Challenge.getTaggablePaths()
-      const tags = taggablePaths.map((path) => _.kebabCase(this[path])).filter(_.identity)
-      return tags
-    })
-  })
-
-  after(function () {
-    fetchTags.restore()
-  })
+  let user, challenge
 
   beforeEach(function () {
     return factory.clean()
@@ -58,9 +46,9 @@ describe('Challenge Model', function () {
     view.should.have.property('users').which.exist
     view.should.have.property('photo')
     view.should.have.property('tags').which.have.lengthOf(3)
-    view.should.have.property('questions').which.is.a('array')
-    view.should.have.property('activities').which.is.a('array')
-    view.should.have.property('resources').which.is.a('array')
+    view.should.have.property('questions').which.is.an('array')
+    view.should.have.property('activities').which.is.an('array')
+    view.should.have.property('resources').which.is.an('array')
   })
 
   it('should assign tags', function () {
@@ -105,7 +93,7 @@ describe('Challenge Model', function () {
       return factory.photo()
         .then((photo) => {
           challenge.photo = photo
-          challenge.save()
+          return challenge.save()
         })
         .then((challenge) => {
           assignTags.should.have.not.been.called
