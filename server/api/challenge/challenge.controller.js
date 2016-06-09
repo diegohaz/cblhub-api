@@ -13,7 +13,7 @@ export const index = ({querymen: {query, select, cursor}}, res) =>
 
 export const show = ({params}, res) =>
   Challenge.findById(params.id)
-    .populate('user users tags')
+    .populate('user users tags questions')
     .then(notFound(res))
     .then((challenge) => challenge ? challenge.view(true) : null)
     .then(success(res))
