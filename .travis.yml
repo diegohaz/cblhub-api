@@ -1,9 +1,9 @@
 language: node_js
 services: mongodb
 node_js:
-  - v5
-  - v4
-matrix:
-  - fast_finish: true
+  - "0.10"
+  - "0.12"
+  - "4"
+  - "6"
 before_script:
   - npm install -g gulp
