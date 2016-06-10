@@ -44,6 +44,18 @@ describe('Guide Model', function () {
       assignTags.restore()
     })
 
+    it('should add guide to challenge', function () {
+      return factory.challenge()
+        .then((challenge) => factory.guide({challenge}))
+        .then((guide) => Challenge.find({guides: guide}).should.eventually.have.lengthOf(1))
+    })
+
+    it('should add guide to related guide', function () {
+      return factory.guide()
+        .then((guide) => factory.guide({guides: [guide]}))
+        .then((guide) => Guide.find({guides: guide}).should.eventually.have.lengthOf(1))
+    })
+
     it('should not assign new tags when guide is saved', function () {
       return guide.save().then(() => {
         assignTags.should.have.not.been.called

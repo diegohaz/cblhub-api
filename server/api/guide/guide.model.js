@@ -2,6 +2,7 @@
 
 import mongoose, {Schema} from 'mongoose'
 import mongooseKeywords from 'mongoose-keywords'
+import Promise from 'bluebird'
 import _ from 'lodash'
 import {getKeywords} from '../../services/watson'
 import Tag from '../tag/tag.model'
@@ -42,13 +43,27 @@ const GuideSchema = new Schema({
 
 GuideSchema.pre('save', function (next) {
   const taggablePaths = this.constructor.getTaggablePaths()
-  const modified = taggablePaths.map((path) => this.isModified(path)).find(_.identity)
+  const taggablePathsModified = taggablePaths.map((path) => this.isModified(path)).find(_.identity)
+  let promises = []
 
-  if (modified) {
-    this.assignTags().then(() => next()).catch(next)
-  } else {
-    next()
+  if (taggablePathsModified) {
+    promises.push(this.assignTags())
   }
+
+  if (this.isModified('challenge') && this.challenge) {
+    this.challenge.guides.addToSet(this)
+    promises.push(this.challenge.save())
+  }
+
+  if (this.isModified('guides')) {
+    promises.push(this.model('Guide').update(
+      {_id: {$in: this.guides.map((guide) => guide._id ? guide._id : guide)}},
+      {$addToSet: {guides: this}},
+      {multi: true}
+    ))
+  }
+
+  Promise.all(promises).then(() => next()).catch(next)
 })
 
 GuideSchema.pre('remove', function (next) {

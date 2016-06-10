@@ -34,7 +34,7 @@ export const create = ({body, user}, res) => {
 }
 
 export const update = ({body, params, user}, res) => {
-  const omittedPaths = ['_id', 'user', 'guides']
+  const omittedPaths = ['_id', 'user', 'challenge']
   return Resource.findById(params.id)
     .then(notFound(res))
     .then((guide) => {
