@@ -1,9 +1,9 @@
 language: node_js
 services: mongodb
 node_js:
-  - "0.10"
-  - "0.12"
-  - "4"
-  - "6"
+  - '4'
+  - '6'
 before_script:
   - npm install -g gulp
+env:
+  secure: RCaRWwxiCWclnUXulnZP0siwZHPJdWa2abIYOtcCtxfzIztP8nS+YbZu96loI5tLc/flXUS4rRxlyHHYYScC6QoN9jNtmDAi5wQqiMDEGsRTlwauEvl+CVCPevR1Kf6Lj6S0z05j2lxIwqBDzc0jDX/WcXUN5MeI0PP3+S5IsdJ3V2Fkomafu4V/vgTWFqBKE51PFyaCLaYSIKpjWGLEB32ydNvj0u3NbXdLadAi4r6kPPi9wdwtdvfBwdTjKwH6gxzaAPa5JJNnEZ2dEq7Cgs6vz7uyQarAs5qSRFC33uckPZByReAmqwGnt7mgJ7fryTseSk/oFRtt5OgBLZMSvsjOvWCFZcWfsms2RVq2q1GzaxkD3s39ztLr5lzCAeFHrUQkD5J98+7v+AyW9kmufh9dJ4PEbdPqLjoS53J2eKxF22Ul1qHxQVnXjI7r3eL9D4zpOH+WCpVkOnMaI8jjVspTacrgFBXb0k8BDuQEw4PLH3K221TWysFlnY5X5lx1IxjO+jnfqqn6K3ooB/p9VsMQka1hwit0RYS0YLrNdRUBqTo/MZEK/zZDHTHNQ74K2DhddpDjEQzBH9k3MSRbtgltQARlXvjxYtD85qHd6Zwh4aTE8W4PaL6qgsyGEbp3imxJlGtXEbKtgLpmD8WH+14H9oSkBtu7r7viEhcl0vo=

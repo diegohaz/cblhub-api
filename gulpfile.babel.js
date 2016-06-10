@@ -56,7 +56,12 @@ const express = (env) => {
 }
 
 gulp.task('env:all', () => {
-  const vars = require(`./${paths.server}/config/local.env`)
+  let vars
+  try {
+    vars = require(`./${paths.server}/config/local.env`)
+  } catch (e) {
+    vars = {}
+  }
   plugins.env({vars})
 })
 
