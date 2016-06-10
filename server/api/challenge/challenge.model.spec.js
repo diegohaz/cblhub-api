@@ -1,10 +1,10 @@
 'use strict'
 
-import _ from 'lodash'
 import app from '../../'
 import * as factory from '../../services/factory'
 import Challenge from './challenge.model'
 import Tag from '../tag/tag.model'
+import Guide from '../guide/guide.model'
 
 describe('Challenge Model', function () {
   let user, challenge
@@ -46,9 +46,7 @@ describe('Challenge Model', function () {
     view.should.have.property('users').which.exist
     view.should.have.property('photo')
     view.should.have.property('tags').which.have.lengthOf(3)
-    view.should.have.property('questions').which.is.an('array')
-    view.should.have.property('activities').which.is.an('array')
-    view.should.have.property('resources').which.is.an('array')
+    view.should.have.property('guides').which.is.an('array')
   })
 
   it('should assign tags', function () {
@@ -110,6 +108,17 @@ describe('Challenge Model', function () {
         })
       })
     })
+  })
+
+  describe('Pre remove', function () {
+
+    it('should remove challenge from guides when removing challenge', function () {
+      return factory.guide({challenge})
+        .then(() => Guide.find({challenge}).should.eventually.have.lengthOf(1))
+        .then(() => challenge.remove())
+        .then(() => Guide.find({challenge}).should.eventually.have.lengthOf(0))
+    })
+
   })
 
 })

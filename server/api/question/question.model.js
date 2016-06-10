@@ -1,8 +1,8 @@
 'use strict'
 
-import mongoose, {Schema} from 'mongoose'
-import GuideSchema from '../../services/guide-schema'
+import {Schema} from 'mongoose'
+import Guide from '../guide/guide.model'
 
-const QuestionSchema = new GuideSchema()
+const QuestionSchema = new Schema()
 
-export default mongoose.model('Question', QuestionSchema)
+export default Guide.discriminator('Question', QuestionSchema)

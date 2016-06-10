@@ -3,7 +3,7 @@
 import {Router} from 'express'
 import {Types} from 'mongoose'
 import {middleware as querymen} from 'querymen'
-import {index, show, create, update, destroy} from './question.controller'
+import {index, show, create, update, destroy} from './resource.controller'
 import {bearer} from '../../services/auth'
 
 const router = new Router()

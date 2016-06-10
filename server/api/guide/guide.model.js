@@ -5,21 +5,18 @@ import mongooseKeywords from 'mongoose-keywords'
 import _ from 'lodash'
 import {getKeywords} from '../../services/watson'
 import Tag from '../tag/tag.model'
-import Guide from '../guide/guide.model'
+import Challenge from '../challenge/challenge.model'
 
-const ChallengeSchema = new Schema({
+const GuideSchema = new Schema({
   user: {
     type: Schema.ObjectId,
     ref: 'User',
     index: true
   },
-  users: [{
+  challenge: {
     type: Schema.ObjectId,
-    ref: 'User'
-  }],
-  photo: {
-    type: String,
-    ref: 'Photo'
+    ref: 'Challenge',
+    index: true
   },
   tags: [{
     type: Schema.ObjectId,
@@ -30,34 +27,20 @@ const ChallengeSchema = new Schema({
     required: true,
     maxlength: 96
   },
-  bigIdea: {
-    type: String,
-    maxlength: 48
-  },
-  essentialQuestion: {
-    type: String,
-    maxlength: 96
-  },
   description: {
     type: String,
     maxlength: 2048
   },
   guides: [{
     type: Schema.ObjectId,
-    ref: 'Guide'
+    ref: 'Guide',
+    index: true
   }]
 }, {
   timestamps: true
 })
 
-ChallengeSchema.path('user').set(function (user) {
-  this.user && this.users.pull(this.user)
-  user && this.users.addToSet(user)
-
-  return user
-})
-
-ChallengeSchema.pre('save', function (next) {
+GuideSchema.pre('save', function (next) {
   const taggablePaths = this.constructor.getTaggablePaths()
   const modified = taggablePaths.map((path) => this.isModified(path)).find(_.identity)
 
@@ -68,25 +51,24 @@ ChallengeSchema.pre('save', function (next) {
   }
 })
 
-ChallengeSchema.pre('remove', function (next) {
-  return Guide.update({challenge: this}, {$unset: {challenge: ''}}, {multi: true})
+GuideSchema.pre('remove', function (next) {
+  const Guide = this.model('Guide')
+  return Challenge.update({guides: this}, {$pull: {guides: this._id}}, {multi: true})
+    .then(() => Guide.update({guides: this}, {$pull: {guides: this._id}}, {multi: true}))
     .then(() => next())
     .catch(next)
 })
 
-ChallengeSchema.methods = {
-  view (full) {
-    const {description, user, users, photo, tags, guides} = this
+GuideSchema.methods = {
+  view () {
+    const {user, tags, challenge, guides} = this
+    const omittedPaths = ['_id', '__v', '__t', 'user', 'tags', 'challenge', 'guides']
     return {
-      ..._.pick(this, [
-        'id', 'title', 'bigIdea', 'essentialQuestion', 'createdAt', 'updatedAt'
-      ]),
-      description: full ? description : undefined,
+      ..._.omit(this.toObject({virtuals: true}), omittedPaths),
       user: user ? user.view() : undefined,
-      users: users ? users.map((user) => user.view()) : undefined,
-      photo: photo ? photo.view() : undefined,
       tags: tags ? tags.map((tag) => tag.view()) : undefined,
-      guides: guides ? guides.map((guide) => guide.view(full)) : undefined
+      challenge: challenge ? challenge.view() : undefined,
+      guides: guides ? guides.map((guide) => guide.view()) : undefined
     }
   },
 
@@ -104,12 +86,12 @@ ChallengeSchema.methods = {
   }
 }
 
-ChallengeSchema.statics = {
+GuideSchema.statics = {
   getTaggablePaths () {
-    return ['title', 'bigIdea', 'essentialQuestion', 'description']
+    return ['title', 'description']
   }
 }
 
-ChallengeSchema.plugin(mongooseKeywords, {paths: ['bigIdea', 'tags', 'guides']})
+GuideSchema.plugin(mongooseKeywords, {paths: ['title', 'tags']})
 
-export default mongoose.model('Challenge', ChallengeSchema)
+export default mongoose.model('Guide', GuideSchema)
