@@ -41,7 +41,7 @@
     "gulp-istanbul": "^0.10.4",
     "gulp-istanbul-enforcer": "^1.0.3",
     "gulp-load-plugins": "^1.2.4",
-    "gulp-mocha": "^2.2.0",
+    "gulp-mocha": "git+https://github.com/sindresorhus/gulp-mocha.git#master",
     "gulp-sourcemaps": "^1.6.0",
     "isparta": "^4.0.0",
     "lazypipe": "^1.0.1",
