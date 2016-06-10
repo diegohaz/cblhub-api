@@ -12,7 +12,10 @@ router.get('/',
   querymen({
     user: [Types.ObjectId],
     challenge: [Types.ObjectId],
-    type: String,
+    type: {
+      type: String,
+      paths: ['__t']
+    },
     guide: {
       type: Types.ObjectId,
       paths: ['guides']

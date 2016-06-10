@@ -18,6 +18,7 @@ describe('Activity Model', function () {
   it('should return a view', function () {
     const view = activity.view()
     view.should.have.property('date')
+    view.should.have.property('type', 'Activity')
   })
 
 })

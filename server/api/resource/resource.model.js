@@ -5,7 +5,8 @@ import Guide from '../guide/guide.model'
 
 const ResourceSchema = new Schema({
   url: String,
-  imageUrl: String
+  media: String,
+  image: String
 })
 
 export default Guide.discriminator('Resource', ResourceSchema)

@@ -1,5 +1,6 @@
 'use strict'
 
+import vcr from 'nock-vcr-recorder-mocha'
 import app from '../..'
 import request from 'supertest-as-promised'
 import * as factory from '../../services/factory'
@@ -163,6 +164,20 @@ describe('Resource API', function () {
       return request(app)
         .get('/resources/123456789098765432123456')
         .expect(404)
+    })
+
+  })
+
+  describe('GET /resources/meta', function () {
+
+    vcr.it('should respond with metadata', function () {
+      return request(app)
+        .get('/resources/meta')
+        .query({url: 'http://www.imdb.com/name/nm0000149/'})
+        .expect(200)
+        .then(({body}) => {
+          body.should.include.keys('title', 'description', 'image', 'media')
+        })
     })
 
   })

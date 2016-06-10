@@ -3,7 +3,7 @@
 import {Router} from 'express'
 import {Types} from 'mongoose'
 import {middleware as querymen} from 'querymen'
-import {index, show, create, update, destroy} from './resource.controller'
+import {index, meta, show, create, update, destroy} from './resource.controller'
 import {bearer} from '../../services/auth'
 
 const router = new Router()
@@ -18,6 +18,7 @@ router.get('/',
     }
   }),
   index)
+router.get('/meta', meta)
 router.get('/:id', show)
 router.post('/', bearer({required: true}), create)
 router.put('/:id', bearer({required: true}), update)

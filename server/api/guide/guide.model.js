@@ -59,6 +59,10 @@ GuideSchema.pre('remove', function (next) {
     .catch(next)
 })
 
+GuideSchema.virtual('type').get(function () {
+  return this.__t
+})
+
 GuideSchema.methods = {
   view () {
     const {user, tags, challenge, guides} = this

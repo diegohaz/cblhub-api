@@ -35,7 +35,7 @@ const UserSchema = new Schema({
     enum: roles,
     default: 'user'
   },
-  pictureUrl: {
+  picture: {
     type: String,
     trim: true
   }
@@ -77,7 +77,7 @@ UserSchema.pre('remove', function (next) {
 UserSchema.methods = {
   view (full) {
     let view = {}
-    let fields = ['id', 'name', 'pictureUrl']
+    let fields = ['id', 'name', 'picture']
 
     if (full) {
       fields = [...fields, 'email', 'createdAt']

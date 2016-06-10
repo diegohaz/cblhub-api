@@ -3,6 +3,7 @@
 import _ from 'lodash'
 import {success, error, notFound} from '../../services/response/'
 import Resource from './resource.model'
+import {getMeta} from '../../services/meta'
 
 export const index = ({querymen: {query, select, cursor}}, res) =>
   Resource.find(query, select, cursor)
@@ -10,6 +11,11 @@ export const index = ({querymen: {query, select, cursor}}, res) =>
     .then((guides) => guides.map((guide) => guide.view()))
     .then(success(res))
     .catch(error(res))
+
+export const meta = ({query: {url}}, res) => {
+  if (!url) return res.status(400).end('Missing url parameter')
+  return getMeta(url).then(success(res)).catch(error(res))
+}
 
 export const show = ({params}, res) =>
   Resource.findById(params.id)

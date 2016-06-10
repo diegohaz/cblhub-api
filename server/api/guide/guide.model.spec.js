@@ -9,7 +9,7 @@ describe('Guide Model', function () {
 
   before(function () {
     return factory.clean()
-      .then(() => factory.guide({title: 'Testing'}))
+      .then(() => factory.guide({title: 'Testing', type: 'Test'}))
       .then((g) => { guide = g })
   })
 

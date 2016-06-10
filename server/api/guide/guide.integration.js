@@ -30,7 +30,7 @@ describe('Guide API', function () {
         .tap((c) => { challenge = c })
         .then(() => factory.guides({user, challenge}, {user, challenge}))
         .tap((guides) => { guide = guides[0] })
-        .spread((guide) => factory.guide({title: 'Zesting', user, challenge, guides: [guide]}))
+        .spread((guide) => factory.question({title: 'Zesting', user, challenge, guides: [guide]}))
         .then(() => factory.guide({user: admin}))
     })
 
@@ -116,6 +116,17 @@ describe('Guide API', function () {
           body.should.be.instanceOf(Array).and.have.lengthOf(1)
         })
     })
+
+    it('should respond with array to type', function () {
+      return request(app)
+        .get('/guides')
+        .query({type: 'Question'})
+        .expect(200)
+        .then(({body}) => {
+          body.should.be.instanceOf(Array).and.have.lengthOf(1)
+        })
+    })
+
   })
 
   describe('POST /guides', function () {
