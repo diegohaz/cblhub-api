@@ -1,5 +1,6 @@
 'use strict'
 
+import '../..'
 import * as factory from '../../services/factory'
 import Guide from './guide.model'
 import Challenge from '../challenge/challenge.model'
@@ -86,7 +87,6 @@ describe('Guide Model', function () {
   })
 
   describe('Pre remove', function () {
-
     it('should pull guides from challenge after removing guide', function () {
       return factory.challenge({guides: [guide]})
         .then(() => Challenge.find({guides: guide}).should.eventually.have.lengthOf(1))
@@ -103,6 +103,5 @@ describe('Guide Model', function () {
         .then(() => guide.remove())
         .then(() => Guide.find({guides: guide}).should.eventually.have.lengthOf(0))
     })
-
   })
 })

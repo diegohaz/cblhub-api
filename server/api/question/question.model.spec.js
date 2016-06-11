@@ -1,6 +1,6 @@
 'use strict'
 
-import app from '../../'
+import '../../'
 import * as factory from '../../services/factory'
 
 describe('Question Model', function () {
@@ -19,5 +19,4 @@ describe('Question Model', function () {
     const view = question.view()
     view.should.have.property('type', 'Question')
   })
-
 })

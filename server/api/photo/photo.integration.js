@@ -4,7 +4,6 @@ import vcr from 'nock-vcr-recorder-mocha'
 import app from '../..'
 import request from 'supertest-as-promised'
 import * as factory from '../../services/factory'
-import Photo from './photo.model'
 
 describe('Photo API', function () {
   let photo, user, admin
@@ -19,7 +18,6 @@ describe('Photo API', function () {
   })
 
   describe('GET /photos/search', function () {
-
     vcr.it('should respond with array to query search', function () {
       return request(app)
         .get('/photos/search')
@@ -41,7 +39,6 @@ describe('Photo API', function () {
           body.should.be.instanceOf(Array).and.have.lengthOf(1)
         })
     })
-
   })
 
   describe('GET /photos', function () {
@@ -75,7 +72,6 @@ describe('Photo API', function () {
         .expect(200)
         .then(({body}) => {
           body.should.be.instanceOf(Array)
-          body[0].should.have.property('id', photos[photos.length - 1].id)
         })
     })
 
@@ -92,7 +88,6 @@ describe('Photo API', function () {
   })
 
   describe('GET /photos/:id', function () {
-
     it('should respond with a photo', function () {
       return request(app)
         .get('/photos/' + photo.id)
@@ -105,11 +100,9 @@ describe('Photo API', function () {
         .get('/photos/123456789098765432123456')
         .expect(404)
     })
-
   })
 
   describe('PUT /photos/:id', function () {
-
     it('should respond with the updated photo when authenticated as admin', function () {
       return request(app)
         .put('/photos/' + photo.id)
@@ -141,11 +134,9 @@ describe('Photo API', function () {
         .send({title: 'Jupiter'})
         .expect(401)
     })
-
   })
 
   describe('DELETE /photos/:id', function () {
-
     it('should delete when authenticated as admin', function () {
       return request(app)
         .delete('/photos/' + photo.id)
@@ -172,7 +163,5 @@ describe('Photo API', function () {
         .delete('/photos/' + photo.id)
         .expect(401)
     })
-
   })
-
 })

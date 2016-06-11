@@ -4,7 +4,6 @@ import vcr from 'nock-vcr-recorder-mocha'
 import * as flickr from './'
 
 vcr.describe('Flickr Service', function () {
-
   it('should get photos', function () {
     return flickr
       .getPhotos('Moon')
@@ -12,5 +11,4 @@ vcr.describe('Flickr Service', function () {
         photos.should.be.instanceof(Array)
       })
   })
-
 })

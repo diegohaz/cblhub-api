@@ -1,8 +1,7 @@
 'use strict'
 
-import app from '../../'
+import '../../'
 import * as factory from '../../services/factory'
-import User from './user.model'
 import Session from '../session/session.model'
 import Challenge from '../challenge/challenge.model'
 
@@ -51,5 +50,4 @@ describe('User Model', function () {
     return factory.user()
       .then(user => user.authenticate('blah').should.eventually.be.false)
   })
-
 })

@@ -4,7 +4,6 @@ import vcr from 'nock-vcr-recorder-mocha'
 import * as meta from './'
 
 vcr.describe('Meta Service', function () {
-
   it('should get meta', function () {
     return meta
       .getMeta('http://www.imdb.com/name/nm0000149/')
@@ -15,5 +14,4 @@ vcr.describe('Meta Service', function () {
         meta.should.have.property('media', 'actor')
       })
   })
-
 })

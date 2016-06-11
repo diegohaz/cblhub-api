@@ -3,7 +3,6 @@
 import app from '../..'
 import request from 'supertest-as-promised'
 import * as factory from '../../services/factory'
-import Tag from './tag.model'
 
 describe('Tag API', function () {
   let tag, user, admin
@@ -18,7 +17,6 @@ describe('Tag API', function () {
   })
 
   describe('GET /tags', function () {
-
     before(function () {
       return factory.tags('Anitta', 'Michael Jackson', 'Shakira')
     })
@@ -76,7 +74,6 @@ describe('Tag API', function () {
   })
 
   describe('POST /tags', function () {
-
     it('should respond with the created tag when authenticated as admin', function () {
       return request(app)
         .post('/tags')
@@ -110,11 +107,9 @@ describe('Tag API', function () {
         .send({name: 'Shakira'})
         .expect(401)
     })
-
   })
 
   describe('GET /tags/:id', function () {
-
     it('should respond with an tag', function () {
       return request(app)
         .get('/tags/' + tag.id)
@@ -127,11 +122,9 @@ describe('Tag API', function () {
         .get('/tags/123456789098765432123456')
         .expect(404)
     })
-
   })
 
   describe('PUT /tags/:id', function () {
-
     it('should respond with the updated tag when authenticated as admin', function () {
       return request(app)
         .put('/tags/' + tag.id)
@@ -171,11 +164,9 @@ describe('Tag API', function () {
         .send({name: 'Anitta'})
         .expect(401)
     })
-
   })
 
   describe('DELETE /tags/:id', function () {
-
     it('should delete when authenticated as admin', function () {
       return request(app)
         .delete('/tags/' + tag.id)
@@ -202,7 +193,5 @@ describe('Tag API', function () {
         .delete('/tags/' + tag.id)
         .expect(401)
     })
-
   })
-
 })

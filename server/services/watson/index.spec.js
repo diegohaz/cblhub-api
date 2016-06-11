@@ -4,7 +4,6 @@ import vcr from 'nock-vcr-recorder-mocha'
 import * as watson from './'
 
 vcr.describe('Watson Service', function () {
-
   it('should get keywords', function () {
     return watson
       .getKeywords('This is a test case for IBM Watson service')
@@ -12,5 +11,4 @@ vcr.describe('Watson Service', function () {
         keywords.should.be.instanceOf(Array)
       })
   })
-
 })

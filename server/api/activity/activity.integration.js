@@ -3,7 +3,6 @@
 import app from '../..'
 import request from 'supertest-as-promised'
 import * as factory from '../../services/factory'
-import Activity from './activity.model'
 
 describe('Activity API', function () {
   let activity, user, admin
@@ -119,7 +118,6 @@ describe('Activity API', function () {
   })
 
   describe('POST /activities', function () {
-
     it('should respond with the created activity when authenticated as user', function () {
       return request(app)
         .post('/activities')
@@ -145,11 +143,9 @@ describe('Activity API', function () {
         .send({title: 'Testing'})
         .expect(401)
     })
-
   })
 
   describe('GET /activities/:id', function () {
-
     it('should respond with an activity', function () {
       return request(app)
         .get('/activities/' + activity.id)
@@ -164,11 +160,9 @@ describe('Activity API', function () {
         .get('/activities/123456789098765432123456')
         .expect(404)
     })
-
   })
 
   describe('PUT /activities/:id', function () {
-
     it('should respond with the updated activity when authenticated as admin', function () {
       return request(app)
         .put('/activities/' + activity.id)
@@ -223,11 +217,9 @@ describe('Activity API', function () {
         .send({title: 'IBM'})
         .expect(401)
     })
-
   })
 
   describe('DELETE /activities/:id', function () {
-
     it('should delete when authenticated as user', function () {
       return request(app)
         .delete('/activities/' + activity.id)
@@ -247,7 +239,5 @@ describe('Activity API', function () {
         .delete('/activities/' + activity.id)
         .expect(401)
     })
-
   })
-
 })

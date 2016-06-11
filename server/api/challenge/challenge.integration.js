@@ -3,10 +3,9 @@
 import app from '../..'
 import request from 'supertest-as-promised'
 import * as factory from '../../services/factory'
-import Challenge from './challenge.model'
 
 describe('Challenge API', function () {
-  let fetchTags, challenge, user, admin
+  let challenge, user, admin
 
   before(function () {
     return factory.clean()
@@ -18,7 +17,6 @@ describe('Challenge API', function () {
   })
 
   describe('GET /challenges', function () {
-
     before(function () {
       return factory.challenges({user}, {user})
         .then(() => factory.challenge({bigIdea: 'Testing', user}))
@@ -80,7 +78,6 @@ describe('Challenge API', function () {
   })
 
   describe('POST /challenges', function () {
-
     it('should respond with the created challenge when authenticated as user', function () {
       return request(app)
         .post('/challenges')
@@ -106,11 +103,9 @@ describe('Challenge API', function () {
         .send({title: 'Testing'})
         .expect(401)
     })
-
   })
 
   describe('GET /challenges/:id', function () {
-
     it('should respond with an challenge', function () {
       return request(app)
         .get('/challenges/' + challenge.id)
@@ -125,11 +120,9 @@ describe('Challenge API', function () {
         .get('/challenges/123456789098765432123456')
         .expect(404)
     })
-
   })
 
   describe('PUT /challenges/:id', function () {
-
     it('should respond with the updated challenge when authenticated as admin', function () {
       return request(app)
         .put('/challenges/' + challenge.id)
@@ -184,11 +177,9 @@ describe('Challenge API', function () {
         .send({title: 'IBM'})
         .expect(401)
     })
-
   })
 
   describe('DELETE /challenges/:id', function () {
-
     it('should delete when authenticated as user', function () {
       return request(app)
         .delete('/challenges/' + challenge.id)
@@ -208,7 +199,5 @@ describe('Challenge API', function () {
         .delete('/challenges/' + challenge.id)
         .expect(401)
     })
-
   })
-
 })

@@ -3,7 +3,6 @@
 import app from '../..'
 import request from 'supertest-as-promised'
 import * as factory from '../../services/factory'
-import Guide from './guide.model'
 
 describe('Guide API', function () {
   let guide, user, admin
@@ -126,11 +125,9 @@ describe('Guide API', function () {
           body.should.be.instanceOf(Array).and.have.lengthOf(1)
         })
     })
-
   })
 
   describe('POST /guides', function () {
-
     it('should respond with the created guide when authenticated as user', function () {
       return request(app)
         .post('/guides')
@@ -156,11 +153,9 @@ describe('Guide API', function () {
         .send({title: 'Testing'})
         .expect(401)
     })
-
   })
 
   describe('GET /guides/:id', function () {
-
     it('should respond with an guide', function () {
       return request(app)
         .get('/guides/' + guide.id)
@@ -175,11 +170,9 @@ describe('Guide API', function () {
         .get('/guides/123456789098765432123456')
         .expect(404)
     })
-
   })
 
   describe('PUT /guides/:id', function () {
-
     it('should respond with the updated guide when authenticated as admin', function () {
       return request(app)
         .put('/guides/' + guide.id)
@@ -234,11 +227,9 @@ describe('Guide API', function () {
         .send({title: 'IBM'})
         .expect(401)
     })
-
   })
 
   describe('DELETE /guides/:id', function () {
-
     it('should delete when authenticated as user', function () {
       return request(app)
         .delete('/guides/' + guide.id)
@@ -258,7 +249,5 @@ describe('Guide API', function () {
         .delete('/guides/' + guide.id)
         .expect(401)
     })
-
   })
-
 })

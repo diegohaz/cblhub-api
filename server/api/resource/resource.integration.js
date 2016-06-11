@@ -4,7 +4,6 @@ import vcr from 'nock-vcr-recorder-mocha'
 import app from '../..'
 import request from 'supertest-as-promised'
 import * as factory from '../../services/factory'
-import Resource from './resource.model'
 
 describe('Resource API', function () {
   let resource, user, admin
@@ -120,7 +119,6 @@ describe('Resource API', function () {
   })
 
   describe('POST /resources', function () {
-
     it('should respond with the created resource when authenticated as user', function () {
       return request(app)
         .post('/resources')
@@ -146,11 +144,9 @@ describe('Resource API', function () {
         .send({title: 'Testing'})
         .expect(401)
     })
-
   })
 
   describe('GET /resources/:id', function () {
-
     it('should respond with an resource', function () {
       return request(app)
         .get('/resources/' + resource.id)
@@ -165,11 +161,9 @@ describe('Resource API', function () {
         .get('/resources/123456789098765432123456')
         .expect(404)
     })
-
   })
 
   describe('GET /resources/meta', function () {
-
     vcr.it('should respond with metadata', function () {
       return request(app)
         .get('/resources/meta')
@@ -179,11 +173,9 @@ describe('Resource API', function () {
           body.should.include.keys('title', 'description', 'image', 'media')
         })
     })
-
   })
 
   describe('PUT /resources/:id', function () {
-
     it('should respond with the updated resource when authenticated as admin', function () {
       return request(app)
         .put('/resources/' + resource.id)
@@ -238,11 +230,9 @@ describe('Resource API', function () {
         .send({title: 'IBM'})
         .expect(401)
     })
-
   })
 
   describe('DELETE /resources/:id', function () {
-
     it('should delete when authenticated as user', function () {
       return request(app)
         .delete('/resources/' + resource.id)
@@ -262,7 +252,5 @@ describe('Resource API', function () {
         .delete('/resources/' + resource.id)
         .expect(401)
     })
-
   })
-
 })

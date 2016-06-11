@@ -1,12 +1,11 @@
 'use strict'
 
-import app from '../../'
+import '../../'
 import * as factory from '../../services/factory'
 import Photo from './photo.model'
 import Challenge from '../challenge/challenge.model'
 
 describe('Photo Model', function () {
-
   before(function () {
     return factory.clean()
   })
@@ -71,5 +70,4 @@ describe('Photo Model', function () {
       .then(() => Challenge.findOne({}))
       .then((challenge) => challenge.should.have.property('photo').which.is.empty)
   })
-
 })

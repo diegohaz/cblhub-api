@@ -13,7 +13,7 @@ export const index = ({querymen: {query, select, cursor}}, res) =>
 
 export const search = ({query: {q, limit}}, res) =>
   getPhotos(q, {limit})
-    .then((photos) => Photo.createUnique(photos.map((p) => Photo.translate(p))))
+    .then((photos) => Promise.all(photos.map((p) => Photo.translate(p).saveUnique())))
     .then((photos) => photos.map((p) => p.view()))
     .then(success(res))
     .catch(error(res))

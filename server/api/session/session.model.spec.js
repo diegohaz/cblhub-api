@@ -1,13 +1,12 @@
 'use strict'
 
-import app from '../../'
+import '../../'
 import moment from 'moment'
 import tk from 'timekeeper'
 import * as factory from '../../services/factory'
 import Session from './session.model'
 
 describe('Session Model', function () {
-
   before(function () {
     return factory.clean()
   })
@@ -70,6 +69,4 @@ describe('Session Model', function () {
       return Session.login(session.token).should.be.rejected
     })
   })
-
-
 })

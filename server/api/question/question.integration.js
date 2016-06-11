@@ -3,7 +3,6 @@
 import app from '../..'
 import request from 'supertest-as-promised'
 import * as factory from '../../services/factory'
-import Question from './question.model'
 
 describe('Question API', function () {
   let question, user, admin
@@ -119,7 +118,6 @@ describe('Question API', function () {
   })
 
   describe('POST /questions', function () {
-
     it('should respond with the created question when authenticated as user', function () {
       return request(app)
         .post('/questions')
@@ -145,11 +143,9 @@ describe('Question API', function () {
         .send({title: 'Testing'})
         .expect(401)
     })
-
   })
 
   describe('GET /questions/:id', function () {
-
     it('should respond with an question', function () {
       return request(app)
         .get('/questions/' + question.id)
@@ -164,11 +160,9 @@ describe('Question API', function () {
         .get('/questions/123456789098765432123456')
         .expect(404)
     })
-
   })
 
   describe('PUT /questions/:id', function () {
-
     it('should respond with the updated question when authenticated as admin', function () {
       return request(app)
         .put('/questions/' + question.id)
@@ -223,11 +217,9 @@ describe('Question API', function () {
         .send({title: 'IBM'})
         .expect(401)
     })
-
   })
 
   describe('DELETE /questions/:id', function () {
-
     it('should delete when authenticated as user', function () {
       return request(app)
         .delete('/questions/' + question.id)
@@ -247,7 +239,5 @@ describe('Question API', function () {
         .delete('/questions/' + question.id)
         .expect(401)
     })
-
   })
-
 })

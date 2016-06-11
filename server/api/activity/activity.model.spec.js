@@ -1,6 +1,6 @@
 'use strict'
 
-import app from '../../'
+import '../../'
 import * as factory from '../../services/factory'
 
 describe('Activity Model', function () {
@@ -20,5 +20,4 @@ describe('Activity Model', function () {
     view.should.have.property('date')
     view.should.have.property('type', 'Activity')
   })
-
 })

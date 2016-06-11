@@ -1,6 +1,6 @@
 'use strict'
 
-import app from '../../'
+import '../../'
 import * as factory from '../../services/factory'
 
 describe('Resource Model', function () {

@@ -1,12 +1,11 @@
 'use strict'
 
-import app from '../../'
+import '../../'
 import * as factory from '../../services/factory'
 import Tag from './tag.model'
 import Challenge from '../challenge/challenge.model'
 
 describe('Tag Model', function () {
-
   before(function () {
     return factory.clean()
   })
@@ -19,8 +18,8 @@ describe('Tag Model', function () {
     return factory.tag('School')
       .then(tag => tag.view())
       .then(view => {
-        expect(view).to.have.property('id')
-        expect(view).to.have.property('name', 'School')
+        view.should.to.have.property('id')
+        view.should.to.have.property('name', 'School')
       })
   })
 
@@ -48,5 +47,4 @@ describe('Tag Model', function () {
       .then(() => Challenge.findOne({}))
       .then((challenge) => challenge.should.have.property('tags').with.lengthOf(2))
   })
-
 })

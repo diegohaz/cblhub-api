@@ -3,7 +3,6 @@
 import app from '../..'
 import request from 'supertest-as-promised'
 import * as factory from '../../services/factory'
-import User from './user.model'
 
 describe('User API', function () {
   var user, userSession, adminSession
@@ -11,7 +10,7 @@ describe('User API', function () {
   before(function () {
     return factory.clean()
       .then(() => factory.user())
-      .tap(u => user = u)
+      .tap(u => { user = u })
       .then(() => factory.sessions('user', 'admin'))
       .spread((u, a) => {
         userSession = u
@@ -20,7 +19,6 @@ describe('User API', function () {
   })
 
   describe('GET /users', function () {
-
     it('should respond with array when authenticated as admin', function () {
       return request(app)
         .get('/users')
@@ -73,7 +71,6 @@ describe('User API', function () {
   })
 
   describe('GET /users/me', function () {
-
     it('should respond with the current user profile when authenticated as user', function () {
       return request(app)
         .get('/users/me')
@@ -87,11 +84,9 @@ describe('User API', function () {
         .get('/users/me')
         .expect(401)
     })
-
   })
 
   describe('GET /users/:id', function () {
-
     it('should respond with a user', function () {
       return request(app)
         .get('/users/' + user.id)
@@ -104,11 +99,9 @@ describe('User API', function () {
         .get('/users/123456789098765432123456')
         .expect(404)
     })
-
   })
 
   describe('POST /users', function () {
-
     it('should respond with the created user when authenticated as admin', function () {
       return request(app)
         .post('/users')
@@ -133,11 +126,9 @@ describe('User API', function () {
         .send({email: 'b@b.com', password: 'pass'})
         .expect(401)
     })
-
   })
 
   describe('PUT /users/me', function () {
-
     it('should respond with the updated current user when authenticated as user', function () {
       return request(app)
         .put('/users/me')
@@ -153,11 +144,9 @@ describe('User API', function () {
         .send({password: 'passsss'})
         .expect(401)
     })
-
   })
 
   describe('PUT /users/:id', function () {
-
     it('should respond with the updated user when authenticated as admin', function () {
       return request(app)
         .put('/users/' + user.id)
@@ -206,11 +195,9 @@ describe('User API', function () {
         .send({name: 'Fake User 2', email: 'test2@example.com'})
         .expect(401)
     })
-
   })
 
   describe('DELETE /users/:id', function () {
-
     it('should delete when authenticated as admin', function () {
       return request(app)
         .delete('/users/' + user.id)
@@ -237,6 +224,5 @@ describe('User API', function () {
         .delete('/users/' + user.id)
         .expect(401)
     })
-
   })
 })

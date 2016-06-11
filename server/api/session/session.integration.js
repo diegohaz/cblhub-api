@@ -3,7 +3,6 @@
 import app from '../..'
 import * as factory from '../../services/factory'
 import request from 'supertest-as-promised'
-import Session from './session.model'
 
 describe('Session API', function () {
   var session, anonymousSession, userSession, adminSession
@@ -18,7 +17,6 @@ describe('Session API', function () {
   })
 
   describe('GET /sessions', function () {
-
     it('should respond with array when authenticated as admin', function () {
       return request(app)
         .get('/sessions')
@@ -72,11 +70,9 @@ describe('Session API', function () {
         .get('/sessions')
         .expect(401)
     })
-
   })
 
   describe('POST /sessions', function () {
-
     it('should respond with the created session', function () {
       return request(app)
         .post('/sessions')
@@ -114,11 +110,9 @@ describe('Session API', function () {
         .post('/sessions')
         .expect(401)
     })
-
   })
 
   describe('DELETE /sessions', function () {
-
     it('should delete all sessions of the authenticated user', function () {
       return request(app)
         .delete('/sessions')
@@ -131,13 +125,11 @@ describe('Session API', function () {
         .delete('/sessions')
         .expect(401)
     })
-
   })
 
   describe('DELETE /sessions/:token', function () {
-
     before(function () {
-      return factory.session().then(s => session = s)
+      return factory.session().then(s => { session = s })
     })
 
     it('should not delete another user session when not authenticated', function () {
@@ -166,7 +158,5 @@ describe('Session API', function () {
         .query({access_token: anonymousSession.token})
         .expect(204)
     })
-
   })
-
 })
