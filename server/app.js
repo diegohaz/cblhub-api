@@ -42,7 +42,7 @@ if (env === 'development' || env === 'test') {
 mongoose.Promise = bluebird
 mongoose.connect(mongo.uri, mongo.options)
 mongoose.Types.ObjectId.prototype.view = function () {
-  return {id: this.toString()}
+  return this.toString()
 }
 /* istanbul ignore next */
 mongoose.connection.on('error', (err) => {
