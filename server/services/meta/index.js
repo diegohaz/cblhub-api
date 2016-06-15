@@ -9,6 +9,7 @@ export const getMeta = (url) => {
 
     client.on('fetch', function () {
       let meta = {
+        url: client.url,
         title: client.ogTitle || client.title,
         description: client.ogDescription || client.description,
         image: client.image,
