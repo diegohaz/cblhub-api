@@ -1,5 +1,6 @@
 'use strict'
 
+import crypto from 'crypto'
 import bcrypt from 'bcrypt'
 import randtoken from 'rand-token'
 import mongoose, {Schema} from 'mongoose'
@@ -45,10 +46,13 @@ const UserSchema = new Schema({
 
 UserSchema.path('email').set(function (email) {
   if (email === 'anonymous') {
-    return randtoken.generate(16) + '@anonymous.com'
-  } else {
-    return email
+    email = randtoken.generate(16) + '@anonymous.com'
   }
+
+  const hash = crypto.createHash('md5').update(email).digest('hex')
+  this.picture = `https://gravatar.com/avatar/${hash}?d=identicon`
+
+  return email
 })
 
 UserSchema.pre('save', function (next) {

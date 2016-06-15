@@ -1,5 +1,6 @@
 'use strict'
 
+import crypto from 'crypto'
 import '../../'
 import * as factory from '../../services/factory'
 import Session from '../session/session.model'
@@ -17,6 +18,14 @@ describe('User Model', function () {
   it('should return full view', function () {
     return factory.user().then(user => {
       user.view(true).should.include.keys('email', 'createdAt')
+    })
+  })
+
+  it('should set picture url automatically', function () {
+    return factory.user().then((user) => {
+      user.email = 'test@test.com'
+      const hash = crypto.createHash('md5').update(user.email).digest('hex')
+      user.picture.should.be.equal(`https://gravatar.com/avatar/${hash}?d=identicon`)
     })
   })
 
