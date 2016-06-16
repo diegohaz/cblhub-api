@@ -21,6 +21,14 @@ describe('User Model', function () {
     })
   })
 
+  it('should set name automatically', function () {
+    return factory.user().then((user) => {
+      user.name = ''
+      user.email = 'test@test.com'
+      user.name.should.be.equal('test')
+    })
+  })
+
   it('should set picture url automatically', function () {
     return factory.user().then((user) => {
       user.email = 'test@test.com'
