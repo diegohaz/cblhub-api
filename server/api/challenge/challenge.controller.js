@@ -6,14 +6,14 @@ import Challenge from './challenge.model'
 
 export const index = ({querymen: {query, select, cursor}}, res) =>
   Challenge.find(query, select, cursor)
-    .populate('user tags')
+    .populate('user tags photo')
     .then((challenges) => challenges.map((challenge) => challenge.view()))
     .then(success(res))
     .catch(error(res))
 
 export const show = ({params}, res) =>
   Challenge.findById(params.id)
-    .populate('user users tags')
+    .populate('user users tags photo')
     .then(notFound(res))
     .then((challenge) => challenge ? challenge.view(true) : null)
     .then(success(res))
@@ -42,6 +42,7 @@ export const update = ({body, params, user}, res) => {
       }
     })
     .then((challenge) => challenge ? _.assign(challenge, _.pick(body, pick)).save() : null)
+    .then((challenge) => challenge ? challenge.populate('photo').execPopulate() : null)
     .then((challenge) => challenge ? challenge.view() : null)
     .then(success(res))
     .catch(error(res))

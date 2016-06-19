@@ -84,7 +84,7 @@ ChallengeSchema.methods = {
       description: full ? description : undefined,
       user: user ? user.view() : undefined,
       users: users ? users.map((user) => user.view()) : undefined,
-      photo: photo ? photo.view() : undefined,
+      photo: photo ? photo.view && photo.view() || photo : undefined,
       tags: tags ? tags.map((tag) => tag.view()) : undefined,
       guides: guides ? guides.map((guide) => guide.view(full)) : undefined
     }
