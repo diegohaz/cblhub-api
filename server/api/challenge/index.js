@@ -8,7 +8,7 @@ import {bearer} from '../../services/auth'
 
 const router = new Router()
 
-router.get('/', querymen({user: [Types.ObjectId]}), index)
+router.get('/', querymen({user: [Types.ObjectId], sort: '-updatedAt'}), index)
 router.get('/:id', show)
 router.post('/', bearer({required: true}), create)
 router.put('/:id', bearer({required: true}), update)

@@ -18,7 +18,7 @@ describe('Tag API', function () {
 
   describe('GET /tags', function () {
     before(function () {
-      return factory.tags('Anitta', 'Michael Jackson', 'Shakira')
+      return factory.tags('anitta', 'michael jackson', 'shakira')
     })
 
     it('should respond with array', function () {
@@ -35,7 +35,7 @@ describe('Tag API', function () {
         .expect(200)
         .then(({body}) => {
           body.should.be.instanceOf(Array).and.have.lengthOf(1)
-          body[0].should.have.property('name', 'Michael Jackson')
+          body[0].should.have.property('name', 'michael jackson')
         })
     })
 
@@ -46,7 +46,7 @@ describe('Tag API', function () {
         .expect(200)
         .then(({body}) => {
           body.should.be.instanceOf(Array).and.have.lengthOf(1)
-          body[0].should.have.property('name', 'Shakira')
+          body[0].should.have.property('name', 'shakira')
         })
     })
 
@@ -57,7 +57,7 @@ describe('Tag API', function () {
         .expect(200)
         .then(({body}) => {
           body.should.be.instanceOf(Array).and.have.lengthOf(3)
-          body[0].should.have.property('name', 'Shakira')
+          body[0].should.have.property('name', 'shakira')
         })
     })
 
@@ -78,11 +78,11 @@ describe('Tag API', function () {
       return request(app)
         .post('/tags')
         .query({access_token: admin.token})
-        .send({name: 'Shakira'})
+        .send({name: 'shakira'})
         .expect(201)
         .then(({body}) => {
           tag = body
-          tag.should.have.property('name', 'Shakira')
+          tag.should.have.property('name', 'shakira')
         })
     })
 
@@ -97,14 +97,14 @@ describe('Tag API', function () {
       return request(app)
         .post('/tags')
         .query({access_token: user.token})
-        .send({name: 'Shakira'})
+        .send({name: 'shakira'})
         .expect(401)
     })
 
     it('should fail 401 when not authenticated', function () {
       return request(app)
         .post('/tags')
-        .send({name: 'Shakira'})
+        .send({name: 'shakira'})
         .expect(401)
     })
   })
@@ -129,9 +129,9 @@ describe('Tag API', function () {
       return request(app)
         .put('/tags/' + tag.id)
         .query({access_token: admin.token})
-        .send({name: 'Watson'})
+        .send({name: 'watson'})
         .expect(200)
-        .then(({body}) => body.should.have.property('name', 'Watson'))
+        .then(({body}) => body.should.have.property('name', 'watson'))
     })
 
     it('should fail 400 when missing parameter', function () {
@@ -146,7 +146,7 @@ describe('Tag API', function () {
       return request(app)
         .put('/tags/123456789098765432123456')
         .query({access_token: admin.token})
-        .send({name: 'Watson'})
+        .send({name: 'watson'})
         .expect(404)
     })
 
@@ -154,14 +154,14 @@ describe('Tag API', function () {
       return request(app)
         .put('/tags/' + tag.id)
         .query({access_token: user.token})
-        .send({name: 'Anitta'})
+        .send({name: 'anitta'})
         .expect(401)
     })
 
     it('should fail 401 when not authenticated', function () {
       return request(app)
         .put('/tags/' + tag.id)
-        .send({name: 'Anitta'})
+        .send({name: 'anitta'})
         .expect(401)
     })
   })

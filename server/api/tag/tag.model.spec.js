@@ -19,7 +19,7 @@ describe('Tag Model', function () {
       .then(tag => tag.view())
       .then(view => {
         view.should.to.have.property('id')
-        view.should.to.have.property('name', 'School')
+        view.should.to.have.property('name', 'school')
       })
   })
 

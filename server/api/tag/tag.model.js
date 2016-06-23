@@ -12,7 +12,8 @@ const TagSchema = new Schema({
     index: true,
     trim: true,
     required: true,
-    unique: true
+    unique: true,
+    lowercase: true
   },
   count: {
     type: Number,
