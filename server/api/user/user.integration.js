@@ -102,10 +102,10 @@ describe('User API', function () {
   })
 
   describe('POST /users', function () {
-    it('should respond with the created user when authenticated as admin', function () {
+    it('should respond with the created user', function () {
       return request(app)
         .post('/users')
-        .send({access_token: adminSession.token, email: 'a@a.com', password: 'pass'})
+        .send({email: 'a@a.com', password: 'pass'})
         .expect(201)
         .then(({body}) => {
           user = body
@@ -113,18 +113,14 @@ describe('User API', function () {
         })
     })
 
-    it('should fail 401 when authenticated as user', function () {
+    it('should respond with the created anonymous user', function () {
       return request(app)
         .post('/users')
-        .send({access_token: userSession.token, email: 'b@b.com', password: 'pass'})
-        .expect(401)
-    })
-
-    it('should fail 401 when not authenticated', function () {
-      return request(app)
-        .post('/users')
-        .send({email: 'b@b.com', password: 'pass'})
-        .expect(401)
+        .send({email: 'anonymous', password: 'pass'})
+        .expect(201)
+        .then(({body}) => {
+          body.should.have.property('id')
+        })
     })
   })
 

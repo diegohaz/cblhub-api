@@ -17,7 +17,7 @@ export const show = ({params}, res) =>
     .then(success(res))
     .catch(error(res))
 
-export const me = ({user}, res) =>
+export const showMe = ({user}, res) =>
   res.json(user.view(true))
 
 export const create = ({body}, res) =>

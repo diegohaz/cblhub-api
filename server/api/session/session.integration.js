@@ -1,11 +1,12 @@
 'use strict'
 
 import app from '../..'
-import * as factory from '../../services/factory'
 import request from 'supertest-as-promised'
+import * as factory from '../../services/factory'
+import User from '../user/user.model'
 
 describe('Session API', function () {
-  var session, anonymousSession, userSession, adminSession
+  var session, userSession, adminSession
 
   before(function () {
     return factory.clean()
@@ -73,36 +74,18 @@ describe('Session API', function () {
   })
 
   describe('POST /sessions', function () {
-    it('should respond with the created session', function () {
-      return request(app)
-        .post('/sessions')
-        .auth('test@example.com', 'password')
-        .expect(201)
-        .then(({body}) => {
-          session = body
-          body.should.have.property('token')
-        })
-    })
-
     it('should respond with the logged session with registered user', function () {
-      return request(app)
-        .post('/sessions')
-        .auth('test@example.com', 'password')
-        .expect(201)
-        .then(({body}) => {
-          body.should.have.property('token')
-        })
-    })
-
-    it('should respond with the created anonymous session', function () {
-      return request(app)
-        .post('/sessions')
-        .auth('anonymous', 'password')
-        .expect(201)
-        .then(({body}) => {
-          anonymousSession = body
-          body.should.have.property('token')
-        })
+      return User.create({ email: 'test@example.com', password: 'pass' }).then((user) =>
+        request(app)
+          .post('/sessions')
+          .auth(user.email, 'pass')
+          .expect(201)
+          .then(({ body }) => {
+            session = body
+            body.should.have.deep.property('user.id', user.id)
+            body.should.have.property('token')
+          })
+      )
     })
 
     it('should fail 401 when not authenticated', function () {
@@ -150,13 +133,6 @@ describe('Session API', function () {
         .delete('/sessions/' + session.token)
         .query({access_token: adminSession.token})
         .expect(404)
-    })
-
-    it('should delete one session from current user when authenticated', function () {
-      return request(app)
-        .delete('/sessions/' + anonymousSession.token)
-        .query({access_token: anonymousSession.token})
-        .expect(204)
     })
   })
 })

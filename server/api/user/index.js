@@ -2,15 +2,15 @@
 
 import {Router} from 'express'
 import {middleware as querymen} from 'querymen'
-import {index, me, show, create, update, destroy} from './user.controller'
+import {index, showMe, show, create, update, destroy} from './user.controller'
 import {bearer} from '../../services/auth'
 
 const router = new Router()
 
 router.get('/', bearer({required: true, roles: ['admin']}), querymen(), index)
-router.get('/me', bearer({required: true}), me)
+router.get('/me', bearer({required: true}), showMe)
 router.get('/:id', show)
-router.post('/', bearer({required: true, roles: ['admin']}), create)
+router.post('/', create)
 router.put('/:id', bearer({required: true}), update)
 router.patch('/:id', bearer({required: true}), update)
 router.delete('/:id', bearer({required: true, roles: ['admin']}), destroy)
