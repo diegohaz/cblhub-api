@@ -24,7 +24,13 @@ export const create = ({body}, res) =>
   User.create(body)
     .then((user) => user.view(true))
     .then(success(res, 201))
-    .catch(error(res))
+    .catch((err) => {
+      if (err.name === 'MongoError' && err.code === 11000) {
+        res.status(400).send(err)
+      } else {
+        error(res)(err)
+      }
+    })
 
 export const update = ({body, params, user}, res) => {
   const omittedPaths = ['_id', 'role', 'createdAt', 'updatedAt']

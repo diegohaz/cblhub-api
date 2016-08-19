@@ -122,6 +122,13 @@ describe('User API', function () {
           body.should.have.property('id')
         })
     })
+
+    it('should fail 400 when email already exists', function () {
+      return request(app)
+        .post('/users')
+        .send({email: 'a@a.com', password: 'pass'})
+        .expect(400)
+    })
   })
 
   describe('PUT /users/me', function () {
