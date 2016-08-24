@@ -1,5 +1,6 @@
 'use strict'
 
+import Jimp from 'jimp'
 import {uid} from 'rand-token'
 import mongoose, {Schema} from 'mongoose'
 import mongooseKeywords from 'mongoose-keywords'
@@ -18,6 +19,7 @@ const PhotoSchema = new Schema({
     unique: true,
     default: () => uid(24)
   },
+  color: String,
   thumbnail: PhotoObjectSchema,
   small: PhotoObjectSchema,
   medium: PhotoObjectSchema,
@@ -42,8 +44,8 @@ PhotoSchema.pre('remove', function (next) {
 PhotoSchema.methods = {
   view () {
     const sizes = ['thumbnail', 'small', 'medium', 'large']
-    const {id, title, owner, url} = this
-    let view = {id, title, owner, url}
+    const {id, title, owner, url, color} = this
+    let view = {id, title, owner, url, color}
 
     sizes.forEach((size) => {
       if (!this[size]) return
@@ -52,6 +54,14 @@ PhotoSchema.methods = {
     })
 
     return view
+  },
+
+  pickColor () {
+    return Jimp.read(this.thumbnail.src).then((image) => {
+      image.resize(1, 1)
+      this.color = `#${image.getPixelColor(0, 0).toString(16).slice(0, 6)}`
+      return this.save()
+    })
   }
 }
 

@@ -65,6 +65,7 @@
     "errorhandler": "^1.4.3",
     "express": "^4.13.4",
     "express-https-redirect": "^1.0.0",
+    "jimp": "^0.2.27",
     "lodash": "^4.13.1",
     "method-override": "^2.3.6",
     "moment": "^2.13.0",
