@@ -1,5 +1,6 @@
 'use strict'
 
+import Promise from 'bluebird'
 import mongoose, {Schema} from 'mongoose'
 import mongooseKeywords from 'mongoose-keywords'
 import _ from 'lodash'
@@ -59,13 +60,15 @@ ChallengeSchema.path('user').set(function (user) {
 
 ChallengeSchema.pre('save', function (next) {
   const taggablePaths = this.constructor.getTaggablePaths()
-  const modified = taggablePaths.map((path) => this.isModified(path)).find(_.identity)
+  const tagsModified = taggablePaths.map((path) => this.isModified(path)).find(_.identity)
+  const photoModified = this.isModified('photo') && this.photo
 
-  if (modified) {
-    this.assignTags().then(() => next()).catch(next)
-  } else {
-    next()
-  }
+  const promises = []
+
+  tagsModified && promises.push(this.assignTags())
+  photoModified && promises.push(this.photo.pickColor())
+
+  Promise.all(promises).then(() => next()).catch(next)
 })
 
 ChallengeSchema.pre('remove', function (next) {

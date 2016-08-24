@@ -7,11 +7,16 @@ import Challenge from '../challenge/challenge.model'
 
 describe('Photo Model', function () {
   before(function () {
+    sinon.stub(Photo.prototype, 'pickColor')
     return factory.clean()
   })
 
   afterEach(function () {
     return factory.clean()
+  })
+
+  after(function () {
+    Photo.prototype.pickColor.restore()
   })
 
   it('should return a view', function () {

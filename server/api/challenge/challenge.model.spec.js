@@ -3,6 +3,7 @@
 import '../../'
 import * as factory from '../../services/factory'
 import Challenge from './challenge.model'
+import Photo from '../photo/photo.model'
 import Tag from '../tag/tag.model'
 import Guide from '../guide/guide.model'
 
@@ -67,23 +68,32 @@ describe('Challenge Model', function () {
   })
 
   describe('Pre save', function () {
-    let assignTags
+    let assignTags, pickColor
 
     before(function () {
       assignTags = sinon.spy(Challenge.prototype, 'assignTags')
+      pickColor = sinon.stub(Photo.prototype, 'pickColor')
     })
 
     beforeEach(function () {
       assignTags.reset()
+      pickColor.reset()
     })
 
     after(function () {
       assignTags.restore()
+      pickColor.restore()
     })
 
     it('should not assign new tags when challenge is saved', function () {
       return challenge.save().then(() => {
         assignTags.should.have.not.been.called
+      })
+    })
+
+    it('should not pick color when challenge is saved', function () {
+      return challenge.save().then(() => {
+        pickColor.should.have.not.been.called
       })
     })
 
@@ -106,6 +116,28 @@ describe('Challenge Model', function () {
         return challenge.save().then(() => {
           assignTags.should.have.been.calledOnce
         })
+      })
+    })
+
+    it('should pick color when challenge is saved with different photo', function () {
+      return factory.photo().then((photo) => {
+        challenge.photo = photo
+        return challenge.save()
+      }).then((challenge) => {
+        pickColor.should.have.been.calledOnce
+      })
+    })
+
+    it('should not pick color when challenge photo is unset', function () {
+      return factory.photo().then((photo) => {
+        challenge.photo = photo
+        return challenge.save()
+      }).then((challenge) => {
+        pickColor.should.have.been.calledOnce
+        challenge.photo = null
+        return challenge.save()
+      }).then((challenge) => {
+        pickColor.should.have.been.calledOnce
       })
     })
   })
