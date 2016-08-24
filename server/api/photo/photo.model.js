@@ -18,6 +18,7 @@ const PhotoSchema = new Schema({
     unique: true,
     default: () => uid(24)
   },
+  thumbnail: PhotoObjectSchema,
   small: PhotoObjectSchema,
   medium: PhotoObjectSchema,
   large: PhotoObjectSchema,
@@ -40,7 +41,7 @@ PhotoSchema.pre('remove', function (next) {
 
 PhotoSchema.methods = {
   view () {
-    const sizes = ['small', 'medium', 'large']
+    const sizes = ['thumbnail', 'small', 'medium', 'large']
     const {id, title, owner, url} = this
     let view = {id, title, owner, url}
 
@@ -58,7 +59,7 @@ PhotoSchema.statics = {
   translate (flickrPhoto) {
     const Photo = mongoose.model('Photo')
     const photo = new Photo()
-    const sizes = ['small', 'medium', 'large']
+    const sizes = ['thumbnail', 'small', 'medium', 'large']
 
     photo._id = flickrPhoto.id
     photo.owner = flickrPhoto.ownername

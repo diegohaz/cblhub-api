@@ -14,7 +14,7 @@ export const getPhotos = (text, {limit = 20, page = 1} = {}) =>
       license: '1,2,3,4,5,6',
       content_type: 6,
       media: 'photos',
-      extras: 'owner_name,url_s,url_m,url_l',
+      extras: 'owner_name,url_t,url_s,url_m,url_l',
       format: 'json',
       nojsoncallback: 1,
       per_page: limit,

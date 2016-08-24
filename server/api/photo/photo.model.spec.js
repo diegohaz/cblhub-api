@@ -34,6 +34,9 @@ describe('Photo Model', function () {
       id: '9551387978',
       title: 'moon',
       ownername: 'fsse8info',
+      url_t: 'https://farm8.staticflickr.com/7454/9551387978_c3439d9e38_t.jpg',
+      height_t: '100',
+      width_t: '80',
       url_s: 'https://farm8.staticflickr.com/7454/9551387978_c3439d9e38_m.jpg',
       height_s: '165',
       width_s: '240',
@@ -50,6 +53,9 @@ describe('Photo Model', function () {
     photo.should.have.property('title', 'moon')
     photo.should.have.property('owner', 'fsse8info')
     photo.should.have.property('url').that.matches(/^https?:\/\/(www\.)?flickr\.com\/photos\/fsse8info\/9551387978\/?$/)
+    photo.should.have.deep.property('thumbnail.src', 'https://farm8.staticflickr.com/7454/9551387978_c3439d9e38_t.jpg')
+    photo.should.have.deep.property('thumbnail.width', 80)
+    photo.should.have.deep.property('thumbnail.height', 100)
     photo.should.have.deep.property('small.src', 'https://farm8.staticflickr.com/7454/9551387978_c3439d9e38_m.jpg')
     photo.should.have.deep.property('small.width', 240)
     photo.should.have.deep.property('small.height', 165)
