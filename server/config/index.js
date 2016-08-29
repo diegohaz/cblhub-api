@@ -17,8 +17,10 @@ const config = {
     root: path.join(__dirname, '../../..'),
     port: process.env.PORT || 9000,
     ip: process.env.IP || '0.0.0.0',
+    defaultEmail: 'no-reply@diegohaz.com',
     watsonKey: requireProcessEnv('WATSON_KEY'),
     flickrKey: requireProcessEnv('FLICKR_KEY'),
+    sendgridKey: requireProcessEnv('SENDGRID_KEY'),
     mongo: {
       options: {
         db: {
