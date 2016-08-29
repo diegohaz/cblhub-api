@@ -5,10 +5,8 @@ import * as sendgrid from './'
 
 describe('Sendgrid Service', function () {
   it('should send email', function () {
-    nock('https://api.sendgrid.com')
-      .post('/v3/mail/send')
-      .reply(202, (uri, requestBody) => requestBody)
-
+    nock.cleanAll()
+    nock('https://api.sendgrid.com').post('/v3/mail/send').reply(202)
     return sendgrid.sendMail({
       toEmail: 'hazdiego@gmail.com',
       subject: 'Test',

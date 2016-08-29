@@ -136,6 +136,7 @@ describe('User API', function () {
     let fbUser
 
     beforeEach(function () {
+      nock.cleanAll()
       nock('https://graph.facebook.com')
         .get('/me')
         .query((params) => params.access_token === '123')
@@ -145,8 +146,6 @@ describe('User API', function () {
           email: 'email@example.com',
           picture: { data: { url: 'test.jpg' } }
         })
-
-      nock('https://graph.facebook.com')
         .get('/me')
         .query((params) => params.access_token === '321')
         .reply(200, {
