@@ -31,6 +31,9 @@ const UserSchema = new Schema({
     index: true,
     trim: true
   },
+  facebook: {
+    id: String
+  },
   role: {
     type: String,
     enum: roles,
@@ -104,7 +107,24 @@ UserSchema.methods = {
 }
 
 UserSchema.statics = {
-  roles
+  roles,
+
+  createFromFacebook ({ id, name, email, picture }) {
+    const User = mongoose.model('User')
+
+    return User.findOne({ email }).then((user) => {
+      if (user) {
+        user.facebook.id = id
+        user.name = name
+        user.email = email
+        user.picture = picture.data.url
+        return user.save()
+      } else {
+        const password = randtoken.generate(16)
+        return User.create({ name, email, password, facebook: { id }, picture: picture.data.url })
+      }
+    })
+  }
 }
 
 UserSchema.plugin(mongooseKeywords, {paths: ['email', 'name']})

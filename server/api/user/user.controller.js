@@ -2,6 +2,7 @@
 
 import _ from 'lodash'
 import {success, error, notFound} from '../../services/response/'
+import {getMe} from '../../services/facebook'
 import User from './user.model'
 
 export const index = ({querymen: {query, select, cursor}}, res) =>
@@ -31,6 +32,17 @@ export const create = ({body}, res) =>
         error(res)(err)
       }
     })
+
+export const createFromFacebook = ({ body: { accessToken } }, res) => {
+  if (!accessToken) return res.status(400).send('Missing accessToken')
+  const fields = 'id, name, email, picture'
+
+  return getMe({ accessToken, fields })
+    .then((user) => User.createFromFacebook(user))
+    .then((user) => user.view(true))
+    .then(success(res, 201))
+    .catch(error(res, 400))
+}
 
 export const update = ({body, params, user}, res) => {
   const omittedPaths = ['_id', 'role', 'createdAt', 'updatedAt']

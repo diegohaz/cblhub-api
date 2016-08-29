@@ -1,19 +1,23 @@
 'use strict'
 
-import vcr from 'nock-vcr-recorder-mocha'
+import nock from 'nock'
 import * as facebook from './'
 
-vcr.describe('Facebook Service', function () {
-  // eslint-disable-next-line
-  const accessToken = 'EAARgiGrIHEcBAGH1m1JJzlfTd62fLGhgVSeDtlB5Ty1MxVN6xAAnLsFPUQdm4pQUmWJJJvbQMNO59JTO6ZBOYbz02QOwlMrZCNzOFFc9SB0kDyHbaypBhKEFzel2aZA9zviZB14MkgkSQ2UdNIdBNkv5qUqSLawBehZBwbUbAZCx1jCRaJZCMZBi'
-
+describe('Facebook Service', function () {
   it('should get user info', function () {
+    nock('https://graph.facebook.com').get('/me').query(true).reply(200, {
+      id: '123',
+      name: 'Test name',
+      email: 'email@example.com',
+      picture: { data: { url: 'test.jpg' } }
+    })
+
     return facebook
-      .getMe({ accessToken, fields: 'id, name, email, picture' })
+      .getMe({ accessToken: '123', fields: 'id, name, email, picture' })
       .then((user) => {
-        user.should.have.property('id', '102384993551413')
-        user.should.have.property('name', 'Richard Alaccigcgaied Chengberg')
-        user.should.have.property('email', 'fthsmuq_chengberg_1472440326@tfbnw.net')
+        user.should.have.property('id', '123')
+        user.should.have.property('name', 'Test name')
+        user.should.have.property('email', 'email@example.com')
         user.should.have.property('picture')
       })
   })

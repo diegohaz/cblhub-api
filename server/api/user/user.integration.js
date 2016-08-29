@@ -1,6 +1,7 @@
 'use strict'
 
 import app from '../..'
+import nock from 'nock'
 import request from 'supertest-as-promised'
 import * as factory from '../../services/factory'
 
@@ -127,6 +128,89 @@ describe('User API', function () {
       return request(app)
         .post('/users')
         .send({email: 'a@a.com', password: 'pass'})
+        .expect(400)
+    })
+  })
+
+  describe('POST /users/facebook', function () {
+    let fbUser
+
+    beforeEach(function () {
+      nock('https://graph.facebook.com')
+        .get('/me')
+        .query((params) => params.access_token === '123')
+        .reply(200, {
+          id: '123',
+          name: 'Test name',
+          email: 'email@example.com',
+          picture: { data: { url: 'test.jpg' } }
+        })
+
+      nock('https://graph.facebook.com')
+        .get('/me')
+        .query((params) => params.access_token === '321')
+        .reply(200, {
+          id: '321',
+          name: 'Test name 2',
+          email: 'email2@example.com',
+          picture: { data: { url: 'test.jpg' } }
+        })
+    })
+
+    it('should respond with the created facebook user', function () {
+      return request(app)
+        .post('/users/facebook')
+        .send({ accessToken: '123' })
+        .expect(201)
+        .then(({ body }) => {
+          fbUser = body
+          body.should.have.property('id')
+          body.should.have.property('name', 'Test name')
+          body.should.have.property('email', 'email@example.com')
+        })
+    })
+
+    it('should respond with the registered facebook user', function () {
+      return request(app)
+        .post('/users/facebook')
+        .send({ accessToken: '123' })
+        .expect(201)
+        .then(({ body }) => {
+          body.should.have.property('id', fbUser.id)
+          body.should.have.property('name', fbUser.name)
+          body.should.have.property('email', fbUser.email)
+        })
+    })
+
+    it('should respond with the registered updated user', function () {
+      let user
+      return factory.user().then((u) => {
+        user = u
+        user.email = 'email2@example.com'
+        return user.save()
+      }).then(() => {
+        return request(app)
+          .post('/users/facebook')
+          .send({ accessToken: '321' })
+          .expect(201)
+          .then(({ body }) => {
+            body.should.have.property('id', user.id)
+            body.should.have.property('name', 'Test name 2')
+            body.should.have.property('email', 'email2@example.com')
+          })
+      })
+    })
+
+    it('should fail 400 when accessToken was not sent', function () {
+      return request(app)
+        .post('/users/facebook')
+        .expect(400)
+    })
+
+    it('should fail 400 when accessToken is wrong', function () {
+      return request(app)
+        .post('/users/facebook')
+        .send({ accessToken: '456' })
         .expect(400)
     })
   })

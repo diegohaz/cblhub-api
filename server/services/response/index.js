@@ -22,7 +22,6 @@ export function error (res, statusCode) {
     } else {
       statusCode = statusCode || 500
       res.status(statusCode).send(err.message)
-      throw err
     }
   }
 }
