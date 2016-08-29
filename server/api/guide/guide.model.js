@@ -1,10 +1,10 @@
 'use strict'
 
-import mongoose, {Schema} from 'mongoose'
+import mongoose, { Schema } from 'mongoose'
 import mongooseKeywords from 'mongoose-keywords'
 import Promise from 'bluebird'
 import _ from 'lodash'
-import {getKeywords} from '../../services/watson'
+import { getKeywords } from '../../services/watson'
 import Tag from '../tag/tag.model'
 import Challenge from '../challenge/challenge.model'
 
@@ -57,9 +57,9 @@ GuideSchema.pre('save', function (next) {
 
   if (this.isModified('guides')) {
     promises.push(this.model('Guide').update(
-      {_id: {$in: this.guides.map((guide) => guide._id ? guide._id : guide)}},
-      {$addToSet: {guides: this}},
-      {multi: true}
+      { _id: { $in: this.guides.map((guide) => guide._id ? guide._id : guide) } },
+      { $addToSet: { guides: this } },
+      { multi: true }
     ))
   }
 
@@ -68,8 +68,8 @@ GuideSchema.pre('save', function (next) {
 
 GuideSchema.pre('remove', function (next) {
   const Guide = this.model('Guide')
-  return Challenge.update({guides: this}, {$pull: {guides: this._id}}, {multi: true})
-    .then(() => Guide.update({guides: this}, {$pull: {guides: this._id}}, {multi: true}))
+  return Challenge.update({ guides: this }, { $pull: { guides: this._id } }, { multi: true })
+    .then(() => Guide.update({ guides: this }, { $pull: { guides: this._id } }, { multi: true }))
     .then(() => next())
     .catch(next)
 })
@@ -80,10 +80,10 @@ GuideSchema.virtual('type').get(function () {
 
 GuideSchema.methods = {
   view () {
-    const {user, tags, challenge, guides} = this
+    const { user, tags, challenge, guides } = this
     const omittedPaths = ['_id', '__v', '__t', 'user', 'tags', 'challenge', 'guides']
     return {
-      ..._.omit(this.toObject({virtuals: true}), omittedPaths),
+      ..._.omit(this.toObject({ virtuals: true }), omittedPaths),
       user: user ? user.view() : undefined,
       tags: tags ? tags.map((tag) => tag.view()) : undefined,
       challenge: challenge ? challenge.view() : undefined,
@@ -94,7 +94,7 @@ GuideSchema.methods = {
   assignTags () {
     return Tag.increment(this.tags, -1)
       .then(() => this.fetchTags())
-      .then((tags) => Tag.createUnique(tags.map((name) => ({name}))))
+      .then((tags) => Tag.createUnique(tags.map((name) => ({ name }))))
       .tap((tags) => { this.tags = tags })
       .then((tags) => Tag.increment(tags))
   },
@@ -111,6 +111,6 @@ GuideSchema.statics = {
   }
 }
 
-GuideSchema.plugin(mongooseKeywords, {paths: ['title', 'tags']})
+GuideSchema.plugin(mongooseKeywords, { paths: ['title', 'tags'] })
 
 export default mongoose.model('Guide', GuideSchema)

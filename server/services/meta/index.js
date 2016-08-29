@@ -5,7 +5,7 @@ import Promise from 'bluebird'
 
 export const getMeta = (url) => {
   return new Promise((resolve, reject) => {
-    const client = new MetaInspector(url, {timeout: 10000})
+    const client = new MetaInspector(url, { timeout: 10000 })
 
     client.on('fetch', function () {
       let meta = {

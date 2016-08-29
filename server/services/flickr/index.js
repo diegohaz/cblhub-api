@@ -1,9 +1,9 @@
 'use strict'
 
 import request from 'request-promise'
-import {flickrKey} from '../../config'
+import { flickrKey } from '../../config'
 
-export const getPhotos = (text, {limit = 20, page = 1} = {}) =>
+export const getPhotos = (text, { limit = 20, page = 1 } = {}) =>
   request({
     uri: 'https://api.flickr.com/services/rest/',
     json: true,

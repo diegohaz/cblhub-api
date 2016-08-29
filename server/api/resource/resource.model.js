@@ -1,6 +1,6 @@
 'use strict'
 
-import {Schema} from 'mongoose'
+import { Schema } from 'mongoose'
 import Guide from '../guide/guide.model'
 
 const ResourceSchema = new Schema({

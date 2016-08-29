@@ -1,23 +1,23 @@
 'use strict'
 
 import _ from 'lodash'
-import {success, error, notFound} from '../../services/response/'
+import { success, error, notFound } from '../../services/response/'
 import Resource from './resource.model'
-import {getMeta} from '../../services/meta'
+import { getMeta } from '../../services/meta'
 
-export const index = ({querymen: {query, select, cursor}}, res) =>
+export const index = ({ querymen: { query, select, cursor } }, res) =>
   Resource.find(query, select, cursor)
     .populate('user tags challenge')
     .then((guides) => guides.map((guide) => guide.view()))
     .then(success(res))
     .catch(error(res))
 
-export const meta = ({query: {url}}, res) => {
+export const meta = ({ query: { url } }, res) => {
   if (!url) return res.status(400).end('Missing url parameter')
   return getMeta(url).then(success(res)).catch(error(res))
 }
 
-export const show = ({params}, res) =>
+export const show = ({ params }, res) =>
   Resource.findById(params.id)
     .populate('user tags challenge guides')
     .then(notFound(res))
@@ -25,7 +25,7 @@ export const show = ({params}, res) =>
     .then(success(res))
     .catch(error(res))
 
-export const create = ({body, user}, res) => {
+export const create = ({ body, user }, res) => {
   body.user = user
   return Resource.create(body)
     .then((guide) => guide.view())
@@ -33,7 +33,7 @@ export const create = ({body, user}, res) => {
     .catch(error(res))
 }
 
-export const update = ({body, params, user}, res) => {
+export const update = ({ body, params, user }, res) => {
   const omittedPaths = ['_id', 'user', 'challenge']
   return Resource.findById(params.id)
     .then(notFound(res))
@@ -53,7 +53,7 @@ export const update = ({body, params, user}, res) => {
     .catch(error(res))
 }
 
-export const destroy = ({params, user}, res) =>
+export const destroy = ({ params, user }, res) =>
   Resource.findById(params.id)
     .then(notFound(res))
     .then((guide) => {

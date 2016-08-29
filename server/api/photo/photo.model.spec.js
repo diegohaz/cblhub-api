@@ -73,7 +73,7 @@ describe('Photo Model', function () {
   })
 
   it('should remove photo from challenges after removing photo', function () {
-    const challenge = new Challenge({title: 'Testing'})
+    const challenge = new Challenge({ title: 'Testing' })
     return factory.photo()
       .tap((photo) => { challenge.photo = photo })
       .then(() => challenge.save())

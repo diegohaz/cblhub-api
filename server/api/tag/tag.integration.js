@@ -25,15 +25,15 @@ describe('Tag API', function () {
       return request(app)
         .get('/tags')
         .expect(200)
-        .then(({body}) => body.should.be.instanceOf(Array))
+        .then(({ body }) => body.should.be.instanceOf(Array))
     })
 
     it('should respond with array to pagination', function () {
       return request(app)
         .get('/tags')
-        .query({page: 2, limit: 1})
+        .query({ page: 2, limit: 1 })
         .expect(200)
-        .then(({body}) => {
+        .then(({ body }) => {
           body.should.be.instanceOf(Array).and.have.lengthOf(1)
           body[0].should.have.property('name', 'michael jackson')
         })
@@ -42,9 +42,9 @@ describe('Tag API', function () {
     it('should respond with array to query search', function () {
       return request(app)
         .get('/tags')
-        .query({q: 'shak'})
+        .query({ q: 'shak' })
         .expect(200)
-        .then(({body}) => {
+        .then(({ body }) => {
           body.should.be.instanceOf(Array).and.have.lengthOf(1)
           body[0].should.have.property('name', 'shakira')
         })
@@ -53,9 +53,9 @@ describe('Tag API', function () {
     it('should respond with array to sort', function () {
       return request(app)
         .get('/tags')
-        .query({sort: '-name'})
+        .query({ sort: '-name' })
         .expect(200)
-        .then(({body}) => {
+        .then(({ body }) => {
           body.should.be.instanceOf(Array).and.have.lengthOf(3)
           body[0].should.have.property('name', 'shakira')
         })
@@ -64,9 +64,9 @@ describe('Tag API', function () {
     it('should respond with array to fields', function () {
       return request(app)
         .get('/tags')
-        .query({fields: '-name'})
+        .query({ fields: '-name' })
         .expect(200)
-        .then(({body}) => {
+        .then(({ body }) => {
           body.should.be.instanceOf(Array).and.have.lengthOf(3)
           body.should.all.not.have.property('name')
         })
@@ -77,10 +77,10 @@ describe('Tag API', function () {
     it('should respond with the created tag when authenticated as admin', function () {
       return request(app)
         .post('/tags')
-        .query({access_token: admin.token})
-        .send({name: 'shakira'})
+        .query({ access_token: admin.token })
+        .send({ name: 'shakira' })
         .expect(201)
-        .then(({body}) => {
+        .then(({ body }) => {
           tag = body
           tag.should.have.property('name', 'shakira')
         })
@@ -89,22 +89,22 @@ describe('Tag API', function () {
     it('should fail 400 when missing parameter', function () {
       return request(app)
         .post('/tags')
-        .query({access_token: admin.token})
+        .query({ access_token: admin.token })
         .expect(400)
     })
 
     it('should fail 401 when authenticated as user', function () {
       return request(app)
         .post('/tags')
-        .query({access_token: user.token})
-        .send({name: 'shakira'})
+        .query({ access_token: user.token })
+        .send({ name: 'shakira' })
         .expect(401)
     })
 
     it('should fail 401 when not authenticated', function () {
       return request(app)
         .post('/tags')
-        .send({name: 'shakira'})
+        .send({ name: 'shakira' })
         .expect(401)
     })
   })
@@ -114,7 +114,7 @@ describe('Tag API', function () {
       return request(app)
         .get('/tags/' + tag.id)
         .expect(200)
-        .then(({body}) => body.should.have.property('name', tag.name))
+        .then(({ body }) => body.should.have.property('name', tag.name))
     })
 
     it('should fail 404 when tag does not exist', function () {
@@ -128,40 +128,40 @@ describe('Tag API', function () {
     it('should respond with the updated tag when authenticated as admin', function () {
       return request(app)
         .put('/tags/' + tag.id)
-        .query({access_token: admin.token})
-        .send({name: 'watson'})
+        .query({ access_token: admin.token })
+        .send({ name: 'watson' })
         .expect(200)
-        .then(({body}) => body.should.have.property('name', 'watson'))
+        .then(({ body }) => body.should.have.property('name', 'watson'))
     })
 
     it('should fail 400 when missing parameter', function () {
       return request(app)
         .put('/tags/' + tag.id)
-        .query({access_token: admin.token})
-        .send({name: ''})
+        .query({ access_token: admin.token })
+        .send({ name: '' })
         .expect(400)
     })
 
     it('should fail 404 when tag does not exist', function () {
       return request(app)
         .put('/tags/123456789098765432123456')
-        .query({access_token: admin.token})
-        .send({name: 'watson'})
+        .query({ access_token: admin.token })
+        .send({ name: 'watson' })
         .expect(404)
     })
 
     it('should fail 401 when authenticated as user', function () {
       return request(app)
         .put('/tags/' + tag.id)
-        .query({access_token: user.token})
-        .send({name: 'anitta'})
+        .query({ access_token: user.token })
+        .send({ name: 'anitta' })
         .expect(401)
     })
 
     it('should fail 401 when not authenticated', function () {
       return request(app)
         .put('/tags/' + tag.id)
-        .send({name: 'anitta'})
+        .send({ name: 'anitta' })
         .expect(401)
     })
   })
@@ -170,21 +170,21 @@ describe('Tag API', function () {
     it('should delete when authenticated as admin', function () {
       return request(app)
         .delete('/tags/' + tag.id)
-        .query({access_token: admin.token})
+        .query({ access_token: admin.token })
         .expect(204)
     })
 
     it('should fail 404 when tag does not exist', function () {
       return request(app)
         .delete('/tags/' + tag.id)
-        .query({access_token: admin.token})
+        .query({ access_token: admin.token })
         .expect(404)
     })
 
     it('should fail when authenticated as user', function () {
       return request(app)
         .delete('/tags/' + tag.id)
-        .query({access_token: user.token})
+        .query({ access_token: user.token })
         .expect(401)
     })
 

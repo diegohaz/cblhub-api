@@ -10,7 +10,7 @@ describe('Guide Model', function () {
 
   before(function () {
     return factory.clean()
-      .then(() => factory.guide({title: 'Testing', type: 'Test'}))
+      .then(() => factory.guide({ title: 'Testing', type: 'Test' }))
       .then((g) => { guide = g })
   })
 
@@ -47,14 +47,14 @@ describe('Guide Model', function () {
 
     it('should add guide to challenge', function () {
       return factory.challenge()
-        .then((challenge) => factory.guide({challenge}))
-        .then((guide) => Challenge.find({guides: guide}).should.eventually.have.lengthOf(1))
+        .then((challenge) => factory.guide({ challenge }))
+        .then((guide) => Challenge.find({ guides: guide }).should.eventually.have.lengthOf(1))
     })
 
     it('should add guide to related guide', function () {
       return factory.guide()
-        .then((guide) => factory.guide({guides: [guide]}))
-        .then((guide) => Guide.find({guides: guide}).should.eventually.have.lengthOf(1))
+        .then((guide) => factory.guide({ guides: [guide] }))
+        .then((guide) => Guide.find({ guides: guide }).should.eventually.have.lengthOf(1))
     })
 
     it('should not assign new tags when guide is saved', function () {
@@ -88,20 +88,20 @@ describe('Guide Model', function () {
 
   describe('Pre remove', function () {
     it('should pull guides from challenge after removing guide', function () {
-      return factory.challenge({guides: [guide]})
-        .then(() => Challenge.find({guides: guide}).should.eventually.have.lengthOf(1))
+      return factory.challenge({ guides: [guide] })
+        .then(() => Challenge.find({ guides: guide }).should.eventually.have.lengthOf(1))
         .then(() => guide.remove())
-        .then(() => Challenge.find({guides: guide}).should.eventually.have.lengthOf(0))
+        .then(() => Challenge.find({ guides: guide }).should.eventually.have.lengthOf(0))
     })
 
     it('should pull guides from guide after removing guide', function () {
       let guide
       return factory.guide()
         .tap((g) => { guide = g })
-        .then(() => factory.guide({guides: [guide]}))
-        .then(() => Guide.find({guides: guide}).should.eventually.have.lengthOf(1))
+        .then(() => factory.guide({ guides: [guide] }))
+        .then(() => Guide.find({ guides: guide }).should.eventually.have.lengthOf(1))
         .then(() => guide.remove())
-        .then(() => Guide.find({guides: guide}).should.eventually.have.lengthOf(0))
+        .then(() => Guide.find({ guides: guide }).should.eventually.have.lengthOf(0))
     })
   })
 })

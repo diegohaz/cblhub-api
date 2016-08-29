@@ -1,27 +1,27 @@
 'use strict'
 
 import _ from 'lodash'
-import {success, error, notFound} from '../../services/response/'
-import {getMe} from '../../services/facebook'
+import { success, error, notFound } from '../../services/response/'
+import { getMe } from '../../services/facebook'
 import User from './user.model'
 
-export const index = ({querymen: {query, select, cursor}}, res) =>
+export const index = ({ querymen: { query, select, cursor } }, res) =>
   User.find(query, select, cursor)
     .then((users) => users.map((user) => user.view()))
     .then(success(res))
     .catch(error(res))
 
-export const show = ({params}, res) =>
+export const show = ({ params }, res) =>
   User.findById(params.id)
     .then(notFound(res))
     .then((user) => user ? user.view() : null)
     .then(success(res))
     .catch(error(res))
 
-export const showMe = ({user}, res) =>
+export const showMe = ({ user }, res) =>
   res.json(user.view(true))
 
-export const create = ({body}, res) =>
+export const create = ({ body }, res) =>
   User.create(body)
     .then((user) => user.view(true))
     .then(success(res, 201))
@@ -44,7 +44,7 @@ export const createFromFacebook = ({ body: { accessToken } }, res) => {
     .catch(error(res, 400))
 }
 
-export const update = ({body, params, user}, res) => {
+export const update = ({ body, params, user }, res) => {
   const omittedPaths = ['_id', 'role', 'createdAt', 'updatedAt']
   return User.findById(params.id === 'me' ? user.id : params.id)
     .then(notFound(res))
@@ -66,7 +66,7 @@ export const update = ({body, params, user}, res) => {
     .catch(error(res))
 }
 
-export const destroy = ({params}, res) =>
+export const destroy = ({ params }, res) =>
   User.findById(params.id)
     .then(notFound(res))
     .then((user) => user ? user.remove() : null)

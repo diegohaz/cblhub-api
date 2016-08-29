@@ -1,7 +1,7 @@
 'use strict'
 
-import {errorHandler} from 'querymen'
-import {Router} from 'express'
+import { errorHandler } from 'querymen'
+import { Router } from 'express'
 import activity from './api/activity'
 import challenge from './api/challenge'
 import guide from './api/guide'

@@ -27,17 +27,17 @@ describe('Question API', function () {
           return factory.challenge()
         })
         .tap((c) => { challenge = c })
-        .then(() => factory.questions({user, challenge}, {user, challenge}))
+        .then(() => factory.questions({ user, challenge }, { user, challenge }))
         .tap((questions) => { question = questions[0] })
-        .spread((question) => factory.question({title: 'Zesting', user, challenge, guides: [question]}))
-        .then(() => factory.question({user: admin}))
+        .spread((question) => factory.question({ title: 'Zesting', user, challenge, guides: [question] }))
+        .then(() => factory.question({ user: admin }))
     })
 
     it('should respond with array', function () {
       return request(app)
         .get('/questions')
         .expect(200)
-        .then(({body}) => {
+        .then(({ body }) => {
           body.should.be.instanceOf(Array)
         })
     })
@@ -45,9 +45,9 @@ describe('Question API', function () {
     it('should respond with array to pagination', function () {
       return request(app)
         .get('/questions')
-        .query({page: 2, limit: 1})
+        .query({ page: 2, limit: 1 })
         .expect(200)
-        .then(({body}) => {
+        .then(({ body }) => {
           body.should.be.instanceOf(Array).and.have.lengthOf(1)
           body[0].should.have.property('title', 'Zesting')
         })
@@ -56,9 +56,9 @@ describe('Question API', function () {
     it('should respond with array to query search', function () {
       return request(app)
         .get('/questions')
-        .query({q: 'zesting'})
+        .query({ q: 'zesting' })
         .expect(200)
-        .then(({body}) => {
+        .then(({ body }) => {
           body.should.be.instanceOf(Array).and.have.lengthOf(1)
           body[0].should.have.property('title', 'Zesting')
         })
@@ -67,9 +67,9 @@ describe('Question API', function () {
     it('should respond with array to sort', function () {
       return request(app)
         .get('/questions')
-        .query({sort: '-title'})
+        .query({ sort: '-title' })
         .expect(200)
-        .then(({body}) => {
+        .then(({ body }) => {
           body.should.be.instanceOf(Array).and.have.lengthOf(4)
           body[0].should.have.property('title', 'Zesting')
         })
@@ -78,9 +78,9 @@ describe('Question API', function () {
     it('should respond with array to fields', function () {
       return request(app)
         .get('/questions')
-        .query({fields: '-title'})
+        .query({ fields: '-title' })
         .expect(200)
-        .then(({body}) => {
+        .then(({ body }) => {
           body.should.be.instanceOf(Array).and.have.lengthOf(4)
           body.should.all.not.have.property('title')
         })
@@ -89,9 +89,9 @@ describe('Question API', function () {
     it('should respond with array to user', function () {
       return request(app)
         .get('/questions')
-        .query({user: admin.id})
+        .query({ user: admin.id })
         .expect(200)
-        .then(({body}) => {
+        .then(({ body }) => {
           body.should.be.instanceOf(Array).and.have.lengthOf(1)
         })
     })
@@ -99,9 +99,9 @@ describe('Question API', function () {
     it('should respond with array to challenge', function () {
       return request(app)
         .get('/questions')
-        .query({challenge: challenge.id})
+        .query({ challenge: challenge.id })
         .expect(200)
-        .then(({body}) => {
+        .then(({ body }) => {
           body.should.be.instanceOf(Array).and.have.lengthOf(3)
         })
     })
@@ -109,9 +109,9 @@ describe('Question API', function () {
     it('should respond with array to guide', function () {
       return request(app)
         .get('/questions')
-        .query({guide: question.id})
+        .query({ guide: question.id })
         .expect(200)
-        .then(({body}) => {
+        .then(({ body }) => {
           body.should.be.instanceOf(Array).and.have.lengthOf(1)
         })
     })
@@ -121,10 +121,10 @@ describe('Question API', function () {
     it('should respond with the created question when authenticated as user', function () {
       return request(app)
         .post('/questions')
-        .query({access_token: user.token})
-        .send({title: 'Testing'})
+        .query({ access_token: user.token })
+        .send({ title: 'Testing' })
         .expect(201)
-        .then(({body}) => {
+        .then(({ body }) => {
           question = body
           question.should.have.property('title', 'Testing')
         })
@@ -133,14 +133,14 @@ describe('Question API', function () {
     it('should fail 400 when missing parameter', function () {
       return request(app)
         .post('/questions')
-        .query({access_token: user.token})
+        .query({ access_token: user.token })
         .expect(400)
     })
 
     it('should fail 401 when not authenticated', function () {
       return request(app)
         .post('/questions')
-        .send({title: 'Testing'})
+        .send({ title: 'Testing' })
         .expect(401)
     })
   })
@@ -150,7 +150,7 @@ describe('Question API', function () {
       return request(app)
         .get('/questions/' + question.id)
         .expect(200)
-        .then(({body}) => {
+        .then(({ body }) => {
           body.should.have.property('title', question.title)
         })
     })
@@ -166,10 +166,10 @@ describe('Question API', function () {
     it('should respond with the updated question when authenticated as admin', function () {
       return request(app)
         .put('/questions/' + question.id)
-        .query({access_token: admin.token})
-        .send({title: 'Watson'})
+        .query({ access_token: admin.token })
+        .send({ title: 'Watson' })
         .expect(200)
-        .then(({body}) => {
+        .then(({ body }) => {
           body.should.have.property('title', 'Watson')
         })
     })
@@ -177,10 +177,10 @@ describe('Question API', function () {
     it('should respond with the updated question when authenticated as same user', function () {
       return request(app)
         .put('/questions/' + question.id)
-        .query({access_token: user.token})
-        .send({title: 'IBM'})
+        .query({ access_token: user.token })
+        .send({ title: 'IBM' })
         .expect(200)
-        .then(({body}) => {
+        .then(({ body }) => {
           body.should.have.property('title', 'IBM')
         })
     })
@@ -188,16 +188,16 @@ describe('Question API', function () {
     it('should fail 400 when missing parameter', function () {
       return request(app)
         .put('/questions/' + question.id)
-        .query({access_token: user.token})
-        .send({title: ''})
+        .query({ access_token: user.token })
+        .send({ title: '' })
         .expect(400)
     })
 
     it('should fail 404 when question does not exist', function () {
       return request(app)
         .put('/questions/123456789098765432123456')
-        .query({access_token: user.token})
-        .send({title: 'Watson'})
+        .query({ access_token: user.token })
+        .send({ title: 'Watson' })
         .expect(404)
     })
 
@@ -205,8 +205,8 @@ describe('Question API', function () {
       return factory.session().then((anotherUser) =>
         request(app)
           .put('/questions/' + question.id)
-          .query({access_token: anotherUser.token})
-          .send({title: 'IBM'})
+          .query({ access_token: anotherUser.token })
+          .send({ title: 'IBM' })
           .expect(401)
         )
     })
@@ -214,7 +214,7 @@ describe('Question API', function () {
     it('should fail 401 when not authenticated', function () {
       return request(app)
         .put('/questions/' + question.id)
-        .send({title: 'IBM'})
+        .send({ title: 'IBM' })
         .expect(401)
     })
   })
@@ -223,14 +223,14 @@ describe('Question API', function () {
     it('should delete when authenticated as user', function () {
       return request(app)
         .delete('/questions/' + question.id)
-        .query({access_token: user.token})
+        .query({ access_token: user.token })
         .expect(204)
     })
 
     it('should fail 404 when question does not exist', function () {
       return request(app)
         .delete('/questions/' + question.id)
-        .query({access_token: user.token})
+        .query({ access_token: user.token })
         .expect(404)
     })
 

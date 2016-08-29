@@ -3,9 +3,9 @@
 import crypto from 'crypto'
 import bcrypt from 'bcrypt'
 import randtoken from 'rand-token'
-import mongoose, {Schema} from 'mongoose'
+import mongoose, { Schema } from 'mongoose'
 import mongooseKeywords from 'mongoose-keywords'
-import {env} from '../../config'
+import { env } from '../../config'
 import Session from '../session/session.model'
 import Challenge from '../challenge/challenge.model'
 
@@ -78,11 +78,11 @@ UserSchema.pre('save', function (next) {
 
 UserSchema.pre('remove', function (next) {
   Challenge.update(
-    {$or: [{user: this}, {users: this}]},
-    {$unset: {user: ''}, $pull: {users: this._id}},
-    {multi: true}
+    { $or: [{ user: this }, { users: this }] },
+    { $unset: { user: '' }, $pull: { users: this._id } },
+    { multi: true }
   )
-  .then(() => Session.remove({user: this}))
+  .then(() => Session.remove({ user: this }))
   .then(next)
   .catch(next)
 })
@@ -127,6 +127,6 @@ UserSchema.statics = {
   }
 }
 
-UserSchema.plugin(mongooseKeywords, {paths: ['email', 'name']})
+UserSchema.plugin(mongooseKeywords, { paths: ['email', 'name'] })
 
 export default mongoose.model('User', UserSchema)

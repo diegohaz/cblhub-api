@@ -1,8 +1,8 @@
 'use strict'
 
-import mongoose, {Schema} from 'mongoose'
+import mongoose, { Schema } from 'mongoose'
 import mongooseKeywords from 'mongoose-keywords'
-import {uid} from 'rand-token'
+import { uid } from 'rand-token'
 import moment from 'moment'
 
 const SessionSchema = new Schema({
@@ -51,7 +51,7 @@ SessionSchema.methods = {
 SessionSchema.statics = {
   login (token) {
     const Session = mongoose.model('Session')
-    return Session.findOne({token}).populate('user').then((session) => {
+    return Session.findOne({ token }).populate('user').then((session) => {
       if (!session) throw new Error('Invalid session')
 
       if (session.expired()) {
@@ -65,6 +65,6 @@ SessionSchema.statics = {
   }
 }
 
-SessionSchema.plugin(mongooseKeywords, {paths: ['user']})
+SessionSchema.plugin(mongooseKeywords, { paths: ['user'] })
 
 export default mongoose.model('Session', SessionSchema)

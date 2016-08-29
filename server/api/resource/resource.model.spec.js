@@ -7,7 +7,7 @@ describe('Resource Model', function () {
   let resource
 
   before(function () {
-    return factory.resource({url: 'test.html', media: 'website', image: 'test.jpg'})
+    return factory.resource({ url: 'test.html', media: 'website', image: 'test.jpg' })
       .then((a) => { resource = a })
   })
 

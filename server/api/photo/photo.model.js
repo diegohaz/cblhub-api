@@ -1,8 +1,8 @@
 'use strict'
 
 import Jimp from 'jimp'
-import {uid} from 'rand-token'
-import mongoose, {Schema} from 'mongoose'
+import { uid } from 'rand-token'
+import mongoose, { Schema } from 'mongoose'
 import mongooseKeywords from 'mongoose-keywords'
 import mongooseCreateUnique from 'mongoose-create-unique'
 import Challenge from '../challenge/challenge.model'
@@ -36,7 +36,7 @@ const PhotoSchema = new Schema({
 
 PhotoSchema.pre('remove', function (next) {
   Challenge
-    .update({photo: this}, {$unset: {photo: ''}}, {multi: true})
+    .update({ photo: this }, { $unset: { photo: '' } }, { multi: true })
     .then(() => next())
     .catch(next)
 })
@@ -44,13 +44,13 @@ PhotoSchema.pre('remove', function (next) {
 PhotoSchema.methods = {
   view () {
     const sizes = ['thumbnail', 'small', 'medium', 'large']
-    const {id, title, owner, url, color} = this
-    let view = {id, title, owner, url, color}
+    const { id, title, owner, url, color } = this
+    let view = { id, title, owner, url, color }
 
     sizes.forEach((size) => {
       if (!this[size]) return
-      const {src, width, height} = this[size]
-      view[size] = {src, width, height}
+      const { src, width, height } = this[size]
+      view[size] = { src, width, height }
     })
 
     return view
@@ -93,7 +93,7 @@ PhotoSchema.statics = {
   }
 }
 
-PhotoSchema.plugin(mongooseKeywords, {paths: ['title', 'owner']})
+PhotoSchema.plugin(mongooseKeywords, { paths: ['title', 'owner'] })
 PhotoSchema.plugin(mongooseCreateUnique)
 
 export default mongoose.model('Photo', PhotoSchema)

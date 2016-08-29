@@ -14,7 +14,7 @@ describe('Challenge Model', function () {
     return factory.clean()
       .then(() => factory.user())
       .tap((u) => { user = u })
-      .then((user) => factory.challenge({user}))
+      .then((user) => factory.challenge({ user }))
       .then((c) => { challenge = c })
   })
 
@@ -144,10 +144,10 @@ describe('Challenge Model', function () {
 
   describe('Pre remove', function () {
     it('should remove challenge from guides when removing challenge', function () {
-      return factory.guide({challenge})
-        .then(() => Guide.find({challenge}).should.eventually.have.lengthOf(1))
+      return factory.guide({ challenge })
+        .then(() => Guide.find({ challenge }).should.eventually.have.lengthOf(1))
         .then(() => challenge.remove())
-        .then(() => Guide.find({challenge}).should.eventually.have.lengthOf(0))
+        .then(() => Guide.find({ challenge }).should.eventually.have.lengthOf(0))
     })
   })
 })

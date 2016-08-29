@@ -1,10 +1,10 @@
 'use strict'
 
 import Promise from 'bluebird'
-import mongoose, {Schema} from 'mongoose'
+import mongoose, { Schema } from 'mongoose'
 import mongooseKeywords from 'mongoose-keywords'
 import _ from 'lodash'
-import {getKeywords} from '../../services/watson'
+import { getKeywords } from '../../services/watson'
 import Tag from '../tag/tag.model'
 import Guide from '../guide/guide.model'
 
@@ -72,14 +72,14 @@ ChallengeSchema.pre('save', function (next) {
 })
 
 ChallengeSchema.pre('remove', function (next) {
-  return Guide.update({challenge: this}, {$unset: {challenge: ''}}, {multi: true})
+  return Guide.update({ challenge: this }, { $unset: { challenge: '' } }, { multi: true })
     .then(() => next())
     .catch(next)
 })
 
 ChallengeSchema.methods = {
   view (full) {
-    const {description, user, users, photo, tags, guides} = this
+    const { description, user, users, photo, tags, guides } = this
     return {
       ..._.pick(this, [
         'id', 'title', 'bigIdea', 'essentialQuestion', 'createdAt', 'updatedAt'
@@ -96,7 +96,7 @@ ChallengeSchema.methods = {
   assignTags () {
     return Tag.increment(this.tags, -1)
       .then(() => this.fetchTags())
-      .then((tags) => Tag.createUnique(tags.map((name) => ({name}))))
+      .then((tags) => Tag.createUnique(tags.map((name) => ({ name }))))
       .tap((tags) => { this.tags = tags })
       .then((tags) => Tag.increment(tags))
   },
@@ -113,6 +113,6 @@ ChallengeSchema.statics = {
   }
 }
 
-ChallengeSchema.plugin(mongooseKeywords, {paths: ['bigIdea', 'tags', 'guides']})
+ChallengeSchema.plugin(mongooseKeywords, { paths: ['bigIdea', 'tags', 'guides'] })
 
 export default mongoose.model('Challenge', ChallengeSchema)

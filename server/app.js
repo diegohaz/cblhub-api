@@ -12,7 +12,7 @@ import errorHandler from 'errorhandler'
 import cors from 'cors'
 import httpsRedirect from 'express-https-redirect'
 
-import {env, mongo, port, ip} from './config'
+import { env, mongo, port, ip } from './config'
 import routes from './routes'
 
 const app = express()
@@ -24,7 +24,7 @@ if (env === 'production') {
 
 app.use(cors())
 app.use(compression())
-app.use(bodyParser.urlencoded({extended: false}))
+app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 app.use(methodOverride())
 

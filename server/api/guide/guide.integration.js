@@ -27,17 +27,17 @@ describe('Guide API', function () {
           return factory.challenge()
         })
         .tap((c) => { challenge = c })
-        .then(() => factory.guides({user, challenge}, {user, challenge}))
+        .then(() => factory.guides({ user, challenge }, { user, challenge }))
         .tap((guides) => { guide = guides[0] })
-        .spread((guide) => factory.question({title: 'Zesting', user, challenge, guides: [guide]}))
-        .then(() => factory.guide({user: admin}))
+        .spread((guide) => factory.question({ title: 'Zesting', user, challenge, guides: [guide] }))
+        .then(() => factory.guide({ user: admin }))
     })
 
     it('should respond with array', function () {
       return request(app)
         .get('/guides')
         .expect(200)
-        .then(({body}) => {
+        .then(({ body }) => {
           body.should.be.instanceOf(Array)
         })
     })
@@ -45,9 +45,9 @@ describe('Guide API', function () {
     it('should respond with array to pagination', function () {
       return request(app)
         .get('/guides')
-        .query({page: 2, limit: 1})
+        .query({ page: 2, limit: 1 })
         .expect(200)
-        .then(({body}) => {
+        .then(({ body }) => {
           body.should.be.instanceOf(Array).and.have.lengthOf(1)
           body[0].should.have.property('title', 'Zesting')
         })
@@ -56,9 +56,9 @@ describe('Guide API', function () {
     it('should respond with array to query search', function () {
       return request(app)
         .get('/guides')
-        .query({q: 'zesting'})
+        .query({ q: 'zesting' })
         .expect(200)
-        .then(({body}) => {
+        .then(({ body }) => {
           body.should.be.instanceOf(Array).and.have.lengthOf(1)
           body[0].should.have.property('title', 'Zesting')
         })
@@ -67,9 +67,9 @@ describe('Guide API', function () {
     it('should respond with array to sort', function () {
       return request(app)
         .get('/guides')
-        .query({sort: '-title'})
+        .query({ sort: '-title' })
         .expect(200)
-        .then(({body}) => {
+        .then(({ body }) => {
           body.should.be.instanceOf(Array).and.have.lengthOf(4)
           body[0].should.have.property('title', 'Zesting')
         })
@@ -78,9 +78,9 @@ describe('Guide API', function () {
     it('should respond with array to fields', function () {
       return request(app)
         .get('/guides')
-        .query({fields: '-title'})
+        .query({ fields: '-title' })
         .expect(200)
-        .then(({body}) => {
+        .then(({ body }) => {
           body.should.be.instanceOf(Array).and.have.lengthOf(4)
           body.should.all.not.have.property('title')
         })
@@ -89,9 +89,9 @@ describe('Guide API', function () {
     it('should respond with array to user', function () {
       return request(app)
         .get('/guides')
-        .query({user: admin.id})
+        .query({ user: admin.id })
         .expect(200)
-        .then(({body}) => {
+        .then(({ body }) => {
           body.should.be.instanceOf(Array).and.have.lengthOf(1)
         })
     })
@@ -99,9 +99,9 @@ describe('Guide API', function () {
     it('should respond with array to challenge', function () {
       return request(app)
         .get('/guides')
-        .query({challenge: challenge.id})
+        .query({ challenge: challenge.id })
         .expect(200)
-        .then(({body}) => {
+        .then(({ body }) => {
           body.should.be.instanceOf(Array).and.have.lengthOf(3)
         })
     })
@@ -109,9 +109,9 @@ describe('Guide API', function () {
     it('should respond with array to guide', function () {
       return request(app)
         .get('/guides')
-        .query({guide: guide.id})
+        .query({ guide: guide.id })
         .expect(200)
-        .then(({body}) => {
+        .then(({ body }) => {
           body.should.be.instanceOf(Array).and.have.lengthOf(1)
         })
     })
@@ -119,9 +119,9 @@ describe('Guide API', function () {
     it('should respond with array to type', function () {
       return request(app)
         .get('/guides')
-        .query({type: 'Question'})
+        .query({ type: 'Question' })
         .expect(200)
-        .then(({body}) => {
+        .then(({ body }) => {
           body.should.be.instanceOf(Array).and.have.lengthOf(1)
         })
     })
@@ -131,10 +131,10 @@ describe('Guide API', function () {
     it('should respond with the created guide when authenticated as user', function () {
       return request(app)
         .post('/guides')
-        .query({access_token: user.token})
-        .send({title: 'Testing'})
+        .query({ access_token: user.token })
+        .send({ title: 'Testing' })
         .expect(201)
-        .then(({body}) => {
+        .then(({ body }) => {
           guide = body
           guide.should.have.property('title', 'Testing')
         })
@@ -143,14 +143,14 @@ describe('Guide API', function () {
     it('should fail 400 when missing parameter', function () {
       return request(app)
         .post('/guides')
-        .query({access_token: user.token})
+        .query({ access_token: user.token })
         .expect(400)
     })
 
     it('should fail 401 when not authenticated', function () {
       return request(app)
         .post('/guides')
-        .send({title: 'Testing'})
+        .send({ title: 'Testing' })
         .expect(401)
     })
   })
@@ -160,7 +160,7 @@ describe('Guide API', function () {
       return request(app)
         .get('/guides/' + guide.id)
         .expect(200)
-        .then(({body}) => {
+        .then(({ body }) => {
           body.should.have.property('title', guide.title)
         })
     })
@@ -176,10 +176,10 @@ describe('Guide API', function () {
     it('should respond with the updated guide when authenticated as admin', function () {
       return request(app)
         .put('/guides/' + guide.id)
-        .query({access_token: admin.token})
-        .send({title: 'Watson'})
+        .query({ access_token: admin.token })
+        .send({ title: 'Watson' })
         .expect(200)
-        .then(({body}) => {
+        .then(({ body }) => {
           body.should.have.property('title', 'Watson')
         })
     })
@@ -187,10 +187,10 @@ describe('Guide API', function () {
     it('should respond with the updated guide when authenticated as same user', function () {
       return request(app)
         .put('/guides/' + guide.id)
-        .query({access_token: user.token})
-        .send({title: 'IBM'})
+        .query({ access_token: user.token })
+        .send({ title: 'IBM' })
         .expect(200)
-        .then(({body}) => {
+        .then(({ body }) => {
           body.should.have.property('title', 'IBM')
         })
     })
@@ -198,16 +198,16 @@ describe('Guide API', function () {
     it('should fail 400 when missing parameter', function () {
       return request(app)
         .put('/guides/' + guide.id)
-        .query({access_token: user.token})
-        .send({title: ''})
+        .query({ access_token: user.token })
+        .send({ title: '' })
         .expect(400)
     })
 
     it('should fail 404 when guide does not exist', function () {
       return request(app)
         .put('/guides/123456789098765432123456')
-        .query({access_token: user.token})
-        .send({title: 'Watson'})
+        .query({ access_token: user.token })
+        .send({ title: 'Watson' })
         .expect(404)
     })
 
@@ -215,8 +215,8 @@ describe('Guide API', function () {
       return factory.session().then((anotherUser) =>
         request(app)
           .put('/guides/' + guide.id)
-          .query({access_token: anotherUser.token})
-          .send({title: 'IBM'})
+          .query({ access_token: anotherUser.token })
+          .send({ title: 'IBM' })
           .expect(401)
         )
     })
@@ -224,7 +224,7 @@ describe('Guide API', function () {
     it('should fail 401 when not authenticated', function () {
       return request(app)
         .put('/guides/' + guide.id)
-        .send({title: 'IBM'})
+        .send({ title: 'IBM' })
         .expect(401)
     })
   })
@@ -233,14 +233,14 @@ describe('Guide API', function () {
     it('should delete when authenticated as user', function () {
       return request(app)
         .delete('/guides/' + guide.id)
-        .query({access_token: user.token})
+        .query({ access_token: user.token })
         .expect(204)
     })
 
     it('should fail 404 when guide does not exist', function () {
       return request(app)
         .delete('/guides/' + guide.id)
-        .query({access_token: user.token})
+        .query({ access_token: user.token })
         .expect(404)
     })
 

@@ -41,21 +41,21 @@ describe('User Model', function () {
     let user
     return factory.session()
       .then((session) => { user = session.user })
-      .then(() => Session.find({user}).should.eventually.have.lengthOf(1))
+      .then(() => Session.find({ user }).should.eventually.have.lengthOf(1))
       .then(() => user.remove())
-      .then(() => Session.find({user}).should.eventually.have.lengthOf(0))
+      .then(() => Session.find({ user }).should.eventually.have.lengthOf(0))
   })
 
   it('should remove user challenges after removing user', function () {
     let user
     return factory.user()
       .tap((u) => { user = u })
-      .then((user) => factory.challenge({user}))
-      .then(() => Challenge.find({user}).should.eventually.have.lengthOf(1))
-      .then(() => Challenge.find({users: user}).should.eventually.have.lengthOf(1))
+      .then((user) => factory.challenge({ user }))
+      .then(() => Challenge.find({ user }).should.eventually.have.lengthOf(1))
+      .then(() => Challenge.find({ users: user }).should.eventually.have.lengthOf(1))
       .then(() => user.remove())
-      .then(() => Challenge.find({user}).should.eventually.have.lengthOf(0))
-      .then(() => Challenge.find({users: user}).should.eventually.have.lengthOf(0))
+      .then(() => Challenge.find({ user }).should.eventually.have.lengthOf(0))
+      .then(() => Challenge.find({ users: user }).should.eventually.have.lengthOf(0))
   })
 
   describe('authenticate', function () {

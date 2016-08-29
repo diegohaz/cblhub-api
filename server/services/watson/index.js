@@ -2,7 +2,7 @@
 
 import request from 'request-promise'
 import _ from 'lodash'
-import {watsonKey as apikey} from '../../config'
+import { watsonKey as apikey } from '../../config'
 
 export const getKeywords = (text) =>
   request({

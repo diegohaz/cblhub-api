@@ -28,17 +28,17 @@ describe('Resource API', function () {
           return factory.challenge()
         })
         .tap((c) => { challenge = c })
-        .then(() => factory.resources({user, challenge}, {user, challenge}))
+        .then(() => factory.resources({ user, challenge }, { user, challenge }))
         .tap((resources) => { resource = resources[0] })
-        .spread((resource) => factory.resource({title: 'Zesting', user, challenge, guides: [resource]}))
-        .then(() => factory.resource({user: admin}))
+        .spread((resource) => factory.resource({ title: 'Zesting', user, challenge, guides: [resource] }))
+        .then(() => factory.resource({ user: admin }))
     })
 
     it('should respond with array', function () {
       return request(app)
         .get('/resources')
         .expect(200)
-        .then(({body}) => {
+        .then(({ body }) => {
           body.should.be.instanceOf(Array)
         })
     })
@@ -46,9 +46,9 @@ describe('Resource API', function () {
     it('should respond with array to pagination', function () {
       return request(app)
         .get('/resources')
-        .query({page: 2, limit: 1})
+        .query({ page: 2, limit: 1 })
         .expect(200)
-        .then(({body}) => {
+        .then(({ body }) => {
           body.should.be.instanceOf(Array).and.have.lengthOf(1)
           body[0].should.have.property('title', 'Zesting')
         })
@@ -57,9 +57,9 @@ describe('Resource API', function () {
     it('should respond with array to query search', function () {
       return request(app)
         .get('/resources')
-        .query({q: 'zesting'})
+        .query({ q: 'zesting' })
         .expect(200)
-        .then(({body}) => {
+        .then(({ body }) => {
           body.should.be.instanceOf(Array).and.have.lengthOf(1)
           body[0].should.have.property('title', 'Zesting')
         })
@@ -68,9 +68,9 @@ describe('Resource API', function () {
     it('should respond with array to sort', function () {
       return request(app)
         .get('/resources')
-        .query({sort: '-title'})
+        .query({ sort: '-title' })
         .expect(200)
-        .then(({body}) => {
+        .then(({ body }) => {
           body.should.be.instanceOf(Array).and.have.lengthOf(4)
           body[0].should.have.property('title', 'Zesting')
         })
@@ -79,9 +79,9 @@ describe('Resource API', function () {
     it('should respond with array to fields', function () {
       return request(app)
         .get('/resources')
-        .query({fields: '-title'})
+        .query({ fields: '-title' })
         .expect(200)
-        .then(({body}) => {
+        .then(({ body }) => {
           body.should.be.instanceOf(Array).and.have.lengthOf(4)
           body.should.all.not.have.property('title')
         })
@@ -90,9 +90,9 @@ describe('Resource API', function () {
     it('should respond with array to user', function () {
       return request(app)
         .get('/resources')
-        .query({user: admin.id})
+        .query({ user: admin.id })
         .expect(200)
-        .then(({body}) => {
+        .then(({ body }) => {
           body.should.be.instanceOf(Array).and.have.lengthOf(1)
         })
     })
@@ -100,9 +100,9 @@ describe('Resource API', function () {
     it('should respond with array to challenge', function () {
       return request(app)
         .get('/resources')
-        .query({challenge: challenge.id})
+        .query({ challenge: challenge.id })
         .expect(200)
-        .then(({body}) => {
+        .then(({ body }) => {
           body.should.be.instanceOf(Array).and.have.lengthOf(3)
         })
     })
@@ -110,9 +110,9 @@ describe('Resource API', function () {
     it('should respond with array to guide', function () {
       return request(app)
         .get('/resources')
-        .query({guide: resource.id})
+        .query({ guide: resource.id })
         .expect(200)
-        .then(({body}) => {
+        .then(({ body }) => {
           body.should.be.instanceOf(Array).and.have.lengthOf(1)
         })
     })
@@ -122,10 +122,10 @@ describe('Resource API', function () {
     it('should respond with the created resource when authenticated as user', function () {
       return request(app)
         .post('/resources')
-        .query({access_token: user.token})
-        .send({title: 'Testing'})
+        .query({ access_token: user.token })
+        .send({ title: 'Testing' })
         .expect(201)
-        .then(({body}) => {
+        .then(({ body }) => {
           resource = body
           resource.should.have.property('title', 'Testing')
         })
@@ -134,14 +134,14 @@ describe('Resource API', function () {
     it('should fail 400 when missing parameter', function () {
       return request(app)
         .post('/resources')
-        .query({access_token: user.token})
+        .query({ access_token: user.token })
         .expect(400)
     })
 
     it('should fail 401 when not authenticated', function () {
       return request(app)
         .post('/resources')
-        .send({title: 'Testing'})
+        .send({ title: 'Testing' })
         .expect(401)
     })
   })
@@ -151,7 +151,7 @@ describe('Resource API', function () {
       return request(app)
         .get('/resources/' + resource.id)
         .expect(200)
-        .then(({body}) => {
+        .then(({ body }) => {
           body.should.have.property('title', resource.title)
         })
     })
@@ -167,9 +167,9 @@ describe('Resource API', function () {
     vcr.it('should respond with metadata', function () {
       return request(app)
         .get('/resources/meta')
-        .query({url: 'http://www.imdb.com/name/nm0000149/'})
+        .query({ url: 'http://www.imdb.com/name/nm0000149/' })
         .expect(200)
-        .then(({body}) => {
+        .then(({ body }) => {
           body.should.include.keys('title', 'description', 'image', 'media')
         })
     })
@@ -179,10 +179,10 @@ describe('Resource API', function () {
     it('should respond with the updated resource when authenticated as admin', function () {
       return request(app)
         .put('/resources/' + resource.id)
-        .query({access_token: admin.token})
-        .send({title: 'Watson'})
+        .query({ access_token: admin.token })
+        .send({ title: 'Watson' })
         .expect(200)
-        .then(({body}) => {
+        .then(({ body }) => {
           body.should.have.property('title', 'Watson')
         })
     })
@@ -190,10 +190,10 @@ describe('Resource API', function () {
     it('should respond with the updated resource when authenticated as same user', function () {
       return request(app)
         .put('/resources/' + resource.id)
-        .query({access_token: user.token})
-        .send({title: 'IBM'})
+        .query({ access_token: user.token })
+        .send({ title: 'IBM' })
         .expect(200)
-        .then(({body}) => {
+        .then(({ body }) => {
           body.should.have.property('title', 'IBM')
         })
     })
@@ -201,16 +201,16 @@ describe('Resource API', function () {
     it('should fail 400 when missing parameter', function () {
       return request(app)
         .put('/resources/' + resource.id)
-        .query({access_token: user.token})
-        .send({title: ''})
+        .query({ access_token: user.token })
+        .send({ title: '' })
         .expect(400)
     })
 
     it('should fail 404 when resource does not exist', function () {
       return request(app)
         .put('/resources/123456789098765432123456')
-        .query({access_token: user.token})
-        .send({title: 'Watson'})
+        .query({ access_token: user.token })
+        .send({ title: 'Watson' })
         .expect(404)
     })
 
@@ -218,8 +218,8 @@ describe('Resource API', function () {
       return factory.session().then((anotherUser) =>
         request(app)
           .put('/resources/' + resource.id)
-          .query({access_token: anotherUser.token})
-          .send({title: 'IBM'})
+          .query({ access_token: anotherUser.token })
+          .send({ title: 'IBM' })
           .expect(401)
         )
     })
@@ -227,7 +227,7 @@ describe('Resource API', function () {
     it('should fail 401 when not authenticated', function () {
       return request(app)
         .put('/resources/' + resource.id)
-        .send({title: 'IBM'})
+        .send({ title: 'IBM' })
         .expect(401)
     })
   })
@@ -236,14 +236,14 @@ describe('Resource API', function () {
     it('should delete when authenticated as user', function () {
       return request(app)
         .delete('/resources/' + resource.id)
-        .query({access_token: user.token})
+        .query({ access_token: user.token })
         .expect(204)
     })
 
     it('should fail 404 when resource does not exist', function () {
       return request(app)
         .delete('/resources/' + resource.id)
-        .query({access_token: user.token})
+        .query({ access_token: user.token })
         .expect(404)
     })
 

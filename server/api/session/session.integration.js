@@ -22,9 +22,9 @@ describe('Session API', function () {
     it('should respond with array when authenticated as admin', function () {
       return request(app)
         .get('/sessions')
-        .query({access_token: adminSession.token})
+        .query({ access_token: adminSession.token })
         .expect(200)
-        .then(({body}) => {
+        .then(({ body }) => {
           body.should.be.instanceOf(Array)
         })
     })
@@ -32,9 +32,9 @@ describe('Session API', function () {
     it('should respond with array to query page when authenticated as admin', function () {
       return request(app)
         .get('/sessions')
-        .query({access_token: adminSession.token, page: 2, limit: 1})
+        .query({ access_token: adminSession.token, page: 2, limit: 1 })
         .expect(200)
-        .then(({body}) => {
+        .then(({ body }) => {
           body.should.be.instanceOf(Array).and.have.lengthOf(1)
         })
     })
@@ -42,9 +42,9 @@ describe('Session API', function () {
     it('should respond with array to query q when authenticated as admin', function () {
       return request(app)
         .get('/sessions')
-        .query({access_token: adminSession.token, q: 'anonymous'})
+        .query({ access_token: adminSession.token, q: 'anonymous' })
         .expect(200)
-        .then(({body}) => {
+        .then(({ body }) => {
           body.should.be.instanceOf(Array).and.have.lengthOf(2)
         })
     })
@@ -52,9 +52,9 @@ describe('Session API', function () {
     it('should respond with array to query user when authenticated as admin', function () {
       return request(app)
         .get('/sessions')
-        .query({access_token: adminSession.token, user: userSession.user.id})
+        .query({ access_token: adminSession.token, user: userSession.user.id })
         .expect(200)
-        .then(({body}) => {
+        .then(({ body }) => {
           body.should.be.instanceOf(Array).and.have.lengthOf(1)
           body[0].should.have.deep.property('user.id', userSession.user.id)
         })
@@ -63,7 +63,7 @@ describe('Session API', function () {
     it('should fail 401 when authenticated as user', function () {
       return request(app)
         .get('/sessions')
-        .query({access_token: userSession.token})
+        .query({ access_token: userSession.token })
         .expect(401)
     })
 
@@ -128,7 +128,7 @@ describe('Session API', function () {
     it('should delete all sessions of the authenticated user', function () {
       return request(app)
         .delete('/sessions')
-        .query({access_token: session.token})
+        .query({ access_token: session.token })
         .expect(204)
     })
 
@@ -153,14 +153,14 @@ describe('Session API', function () {
     it('should delete another user session when authenticated as admin', function () {
       return request(app)
         .delete('/sessions/' + session.token)
-        .query({access_token: adminSession.token})
+        .query({ access_token: adminSession.token })
         .expect(204)
     })
 
     it('should fail 404 when session does not exit', function () {
       return request(app)
         .delete('/sessions/' + session.token)
-        .query({access_token: adminSession.token})
+        .query({ access_token: adminSession.token })
         .expect(404)
     })
   })

@@ -7,7 +7,7 @@ describe('Activity Model', function () {
   let activity
 
   before(function () {
-    return factory.activity({date: Date.now()})
+    return factory.activity({ date: Date.now() })
       .then((a) => { activity = a })
   })
 

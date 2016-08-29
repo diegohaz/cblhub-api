@@ -1,14 +1,14 @@
 'use strict'
 
 import passport from 'passport'
-import {BasicStrategy} from 'passport-http'
-import {Strategy as BearerStrategy} from 'passport-http-bearer'
+import { BasicStrategy } from 'passport-http'
+import { Strategy as BearerStrategy } from 'passport-http-bearer'
 
 import User from '../../api/user/user.model'
 import Session from '../../api/session/session.model'
 
 passport.use(new BasicStrategy((email, password, done) => {
-  User.findOne({email: email.toLowerCase()}).then((user) => {
+  User.findOne({ email: email.toLowerCase() }).then((user) => {
     if (!user) return done(true)
 
     return user.authenticate(password, user.password)
@@ -17,7 +17,7 @@ passport.use(new BasicStrategy((email, password, done) => {
   })
 }))
 
-passport.use(new BearerStrategy({passReqToCallback: true}, (req, token, done) => {
+passport.use(new BearerStrategy({ passReqToCallback: true }, (req, token, done) => {
   Session.login(token).then((session) => {
     req.session = session
     done(null, session.user)

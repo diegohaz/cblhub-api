@@ -1,6 +1,6 @@
 'use strict'
 
-import mongoose, {Schema} from 'mongoose'
+import mongoose, { Schema } from 'mongoose'
 import mongooseKeywords from 'mongoose-keywords'
 import mongooseCreateUnique from 'mongoose-create-unique'
 import Promise from 'bluebird'
@@ -23,15 +23,15 @@ const TagSchema = new Schema({
 
 TagSchema.pre('remove', function (next) {
   Challenge
-    .update({tags: this}, {$pull: {tags: this._id}}, {multi: true}).exec()
+    .update({ tags: this }, { $pull: { tags: this._id } }, { multi: true }).exec()
     .then(() => next())
     .catch(next)
 })
 
 TagSchema.methods = {
   view () {
-    const {id, name} = this
-    return {id, name}
+    const { id, name } = this
+    return { id, name }
   }
 }
 
@@ -41,14 +41,14 @@ TagSchema.statics = {
       return Promise.resolve()
     }
     return this.update(
-      {_id: {$in: tags.map(({_id}) => _id)}},
-      {$inc: {count: amount}},
-      {multi: true}
+      { _id: { $in: tags.map(({ _id }) => _id) } },
+      { $inc: { count: amount } },
+      { multi: true }
     ).exec()
   }
 }
 
-TagSchema.plugin(mongooseKeywords, {paths: ['name']})
+TagSchema.plugin(mongooseKeywords, { paths: ['name'] })
 TagSchema.plugin(mongooseCreateUnique)
 
 export default mongoose.model('Tag', TagSchema)

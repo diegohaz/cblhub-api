@@ -30,8 +30,8 @@ const guideFetchTags = sinon.stub(Guide.prototype, 'fetchTags', fetchTags)
 export const clean = () =>
   Promise.each(_.values(mongoose.connection.collections), (collection) => collection.remove())
 
-export const activity = ({title = 'Give free hugs', ...rest} = {}) =>
-  Activity.create({title, ...rest}).then((activity) => {
+export const activity = ({ title = 'Give free hugs', ...rest } = {}) =>
+  Activity.create({ title, ...rest }).then((activity) => {
     activityFetchTags.reset()
     return activity
   })
@@ -45,7 +45,7 @@ export const challenge = ({
   essentialQuestion = 'How can we make the World a better place?',
   ...rest
 } = {}) =>
-  Challenge.create({title, bigIdea, essentialQuestion, ...rest}).then((challenge) => {
+  Challenge.create({ title, bigIdea, essentialQuestion, ...rest }).then((challenge) => {
     challengeFetchTags.reset()
     return challenge
   })
@@ -53,8 +53,8 @@ export const challenge = ({
 export const challenges = (...objects) =>
   Promise.all(_.times(objects.length || 1, (i) => challenge(objects[i])))
 
-export const guide = ({title = 'Why make people happy?', ...rest} = {}) =>
-  Guide.create({title, ...rest}).then((guide) => {
+export const guide = ({ title = 'Why make people happy?', ...rest } = {}) =>
+  Guide.create({ title, ...rest }).then((guide) => {
     guideFetchTags.reset()
     return guide
   })
@@ -63,13 +63,13 @@ export const guides = (...objects) =>
   Promise.all(_.times(objects.length || 1, (i) => guide(objects[i])))
 
 export const photo = (id) =>
-  id ? Photo.createUnique({_id: id}) : Photo.create({})
+  id ? Photo.createUnique({ _id: id }) : Photo.create({})
 
 export const photos = (...ids) =>
-  Photo.createUnique(ids.map((id) => ({_id: id})))
+  Photo.createUnique(ids.map((id) => ({ _id: id })))
 
-export const question = ({title = 'Why make people happy?', ...rest} = {}) =>
-  Question.create({title, ...rest}).then((question) => {
+export const question = ({ title = 'Why make people happy?', ...rest } = {}) =>
+  Question.create({ title, ...rest }).then((question) => {
     questionFetchTags.reset()
     return question
   })
@@ -77,8 +77,8 @@ export const question = ({title = 'Why make people happy?', ...rest} = {}) =>
 export const questions = (...objects) =>
   Promise.all(_.times(objects.length || 1, (i) => question(objects[i])))
 
-export const resource = ({title = 'Why make people happy?', ...rest} = {}) =>
-  Resource.create({title, ...rest}).then((resource) => {
+export const resource = ({ title = 'Why make people happy?', ...rest } = {}) =>
+  Resource.create({ title, ...rest }).then((resource) => {
     resourceFetchTags.reset()
     return resource
   })
@@ -98,13 +98,13 @@ export const users = (...roles) =>
   Promise.all(_.times(roles.length || 1, (i) => user(roles[i])))
 
 export const tag = (name) =>
-  Tag.createUnique({name})
+  Tag.createUnique({ name })
 
 export const tags = (...names) =>
-  Tag.createUnique(names.map((name) => ({name})))
+  Tag.createUnique(names.map((name) => ({ name })))
 
 export const session = (role) =>
-  user(role).then((user) => Session.create({user}))
+  user(role).then((user) => Session.create({ user }))
 
 export const sessions = (...roles) =>
   Promise.all(_.times(roles.length || 1, (i) => session(roles[i])))

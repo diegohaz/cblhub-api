@@ -39,9 +39,9 @@ describe('Tag Model', function () {
   })
 
   it('should remove tag from challenges after removing tag', function () {
-    return factory.challenge({title: 'foo'})
+    return factory.challenge({ title: 'foo' })
       .tap((challenge) => challenge.should.have.property('tags').with.lengthOf(3))
-      .then(() => Tag.findOne({name: 'foo'}))
+      .then(() => Tag.findOne({ name: 'foo' }))
       .tap((tag) => tag.should.have.property('name', 'foo'))
       .then((tag) => tag.remove())
       .then(() => Challenge.findOne({}))
