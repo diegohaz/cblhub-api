@@ -33,11 +33,11 @@ export const create = ({ body }, res) =>
       }
     })
 
-export const createFromFacebook = ({ body: { accessToken } }, res) => {
-  if (!accessToken) return res.status(400).send('Missing accessToken')
+export const createFromFacebook = ({ body }, res) => {
+  if (!body.access_token) return res.status(400).send('Missing access_token')
   const fields = 'id, name, email, picture'
 
-  return getMe({ accessToken, fields })
+  return getMe({ accessToken: body.access_token, fields })
     .then((user) => User.createFromFacebook(user))
     .then((user) => user.view(true))
     .then(success(res, 201))

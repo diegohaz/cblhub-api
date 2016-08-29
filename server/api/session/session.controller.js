@@ -18,11 +18,11 @@ export const create = ({ user }, res) =>
     .then(success(res, 201))
     .catch(error(res))
 
-export const createFromFacebook = ({ body: { accessToken } }, res) => {
-  if (!accessToken) return res.status(400).send('Missing accessToken')
+export const createFromFacebook = ({ body }, res) => {
+  if (!body.access_token) return res.status(400).send('Missing access_token')
   const fields = 'id, name, email, picture'
 
-  return getMe({ accessToken, fields })
+  return getMe({ accessToken: body.access_token, fields })
     .then((user) => User.createFromFacebook(user))
     .then((user) => Session.create({ user }))
     .then((session) => session.view(true))

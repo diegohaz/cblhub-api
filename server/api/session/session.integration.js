@@ -109,7 +109,7 @@ describe('Session API', function () {
 
       return request(app)
         .post('/sessions/facebook')
-        .send({ accessToken: '123' })
+        .send({ access_token: '123' })
         .expect(201)
         .then(({ body }) => {
           body.should.have.deep.property('user.id')

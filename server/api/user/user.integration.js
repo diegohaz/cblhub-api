@@ -160,7 +160,7 @@ describe('User API', function () {
     it('should respond with the created facebook user', function () {
       return request(app)
         .post('/users/facebook')
-        .send({ accessToken: '123' })
+        .send({ access_token: '123' })
         .expect(201)
         .then(({ body }) => {
           fbUser = body
@@ -173,7 +173,7 @@ describe('User API', function () {
     it('should respond with the registered facebook user', function () {
       return request(app)
         .post('/users/facebook')
-        .send({ accessToken: '123' })
+        .send({ access_token: '123' })
         .expect(201)
         .then(({ body }) => {
           body.should.have.property('id', fbUser.id)
@@ -191,7 +191,7 @@ describe('User API', function () {
       }).then(() => {
         return request(app)
           .post('/users/facebook')
-          .send({ accessToken: '321' })
+          .send({ access_token: '321' })
           .expect(201)
           .then(({ body }) => {
             body.should.have.property('id', user.id)
@@ -210,7 +210,7 @@ describe('User API', function () {
     it('should fail 400 when accessToken is wrong', function () {
       return request(app)
         .post('/users/facebook')
-        .send({ accessToken: '456' })
+        .send({ access_token: '456' })
         .expect(400)
     })
   })
