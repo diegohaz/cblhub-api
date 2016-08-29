@@ -9,6 +9,7 @@ export function success (res, statusCode) {
     if (entity) {
       res.status(statusCode).json(entity)
     }
+    return null
   }
 }
 
@@ -18,7 +19,7 @@ export function error (res, statusCode) {
       statusCode = statusCode || 400
       var errors = err.errors
       var message = errors ? errors[_.keys(errors)[0]].message : err.message
-      return res.status(statusCode).send(message)
+      res.status(statusCode).send(message)
     } else {
       statusCode = statusCode || 500
       res.status(statusCode).send(err.message)

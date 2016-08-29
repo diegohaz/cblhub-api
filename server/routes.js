@@ -5,6 +5,7 @@ import { Router } from 'express'
 import activity from './api/activity'
 import challenge from './api/challenge'
 import guide from './api/guide'
+import passwordReset from './api/password-reset'
 import photo from './api/photo'
 import question from './api/question'
 import resource from './api/resource'
@@ -17,6 +18,7 @@ const router = new Router()
 router.use('/activities', activity)
 router.use('/challenges', challenge)
 router.use('/guides', guide)
+router.use('/password-resets', passwordReset)
 router.use('/photos', photo)
 router.use('/questions', question)
 router.use('/resources', resource)
