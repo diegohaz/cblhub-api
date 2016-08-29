@@ -18,7 +18,7 @@ describe('PasswordReset API', function () {
 
   describe('POST /password-resets', function () {
     it('should respond 202 when user email is registered', function () {
-      nock.cleanAll()
+      nock.restore() && nock.isActive() || nock.activate()
       nock('https://api.sendgrid.com').post('/v3/mail/send').reply(202)
       return request(app)
         .post('/password-resets')

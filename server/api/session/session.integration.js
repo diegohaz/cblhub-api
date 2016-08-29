@@ -105,7 +105,7 @@ describe('Session API', function () {
         picture: { data: { url: 'test.jpg' } }
       }
 
-      nock.cleanAll()
+      nock.restore() && nock.isActive() || nock.activate()
       nock('https://graph.facebook.com').get('/me').query(true).reply(200, fbUser)
 
       return request(app)

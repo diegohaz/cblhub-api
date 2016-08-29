@@ -5,7 +5,7 @@ import * as facebook from './'
 
 describe('Facebook Service', function () {
   it('should get user info', function () {
-    nock.cleanAll()
+    nock.restore() && nock.isActive() || nock.activate()
     nock('https://graph.facebook.com').get('/me').query(true).reply(200, {
       id: '123',
       name: 'Test name',

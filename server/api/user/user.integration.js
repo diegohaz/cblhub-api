@@ -136,7 +136,7 @@ describe('User API', function () {
     let fbUser
 
     beforeEach(function () {
-      nock.cleanAll()
+      nock.restore() && nock.isActive() || nock.activate()
       nock('https://graph.facebook.com')
         .get('/me')
         .query((params) => params.access_token === '123')
