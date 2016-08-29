@@ -2,6 +2,7 @@
 
 import app from '../..'
 import request from 'supertest-as-promised'
+import nock from 'nock'
 import * as factory from '../../services/factory'
 import User from '../user/user.model'
 
@@ -92,6 +93,34 @@ describe('Session API', function () {
       return request(app)
         .post('/sessions')
         .expect(401)
+    })
+  })
+
+  describe('POST /sessions/facebook', function () {
+    it('should respond with the logged session with registered facebook user', function () {
+      const fbUser = {
+        id: '123',
+        name: 'name',
+        email: 'test@example.com',
+        picture: { data: { url: 'test.jpg' } }
+      }
+
+      nock('https://graph.facebook.com').get('/me').query(true).reply(200, fbUser)
+
+      return request(app)
+        .post('/sessions/facebook')
+        .send({ accessToken: '123' })
+        .expect(201)
+        .then(({ body }) => {
+          body.should.have.deep.property('user.id')
+          body.should.have.property('token')
+        })
+    })
+
+    it('should fail 400 when missing accessToken', function () {
+      return request(app)
+        .post('/sessions/facebook')
+        .expect(400)
     })
   })
 

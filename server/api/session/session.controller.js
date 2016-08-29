@@ -1,7 +1,9 @@
 'use strict'
 
 import {success, error, notFound} from '../../services/response/'
+import {getMe} from '../../services/facebook'
 import Session from './session.model'
+import User from '../user/user.model'
 
 export const index = ({querymen: {query, cursor}}, res) =>
   Session.find(query, null, cursor)
@@ -15,6 +17,18 @@ export const create = ({user}, res) =>
     .then((session) => session.view(true))
     .then(success(res, 201))
     .catch(error(res))
+
+export const createFromFacebook = ({ body: { accessToken } }, res) => {
+  if (!accessToken) return res.status(400).send('Missing accessToken')
+  const fields = 'id, name, email, picture'
+
+  return getMe({ accessToken, fields })
+    .then((user) => User.createFromFacebook(user))
+    .then((user) => Session.create({ user }))
+    .then((session) => session.view(true))
+    .then(success(res, 201))
+    .catch(error(res))
+}
 
 export const destroy = ({params: {token}, user}, res) =>
   token
