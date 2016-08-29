@@ -49,8 +49,10 @@ UserSchema.path('email').set(function (email) {
     email = randtoken.generate(16) + '@anonymous.com'
   }
 
-  const hash = crypto.createHash('md5').update(email).digest('hex')
-  this.picture = `https://gravatar.com/avatar/${hash}?d=identicon`
+  if (!this.picture) {
+    const hash = crypto.createHash('md5').update(email).digest('hex')
+    this.picture = `https://gravatar.com/avatar/${hash}?d=identicon`
+  }
 
   if (!this.name) {
     this.name = email.replace(/^(.+)@.+$/, '$1')

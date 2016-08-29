@@ -3,6 +3,7 @@
 import crypto from 'crypto'
 import '../../'
 import * as factory from '../../services/factory'
+import User from './user.model'
 import Session from '../session/session.model'
 import Challenge from '../challenge/challenge.model'
 
@@ -30,8 +31,7 @@ describe('User Model', function () {
   })
 
   it('should set picture url automatically', function () {
-    return factory.user().then((user) => {
-      user.email = 'test@test.com'
+    return User.create({ email: 'test@test.com', password: '123' }).then((user) => {
       const hash = crypto.createHash('md5').update(user.email).digest('hex')
       user.picture.should.be.equal(`https://gravatar.com/avatar/${hash}?d=identicon`)
     })
