@@ -8,7 +8,7 @@ describe('Sendgrid Service', function () {
     nock.cleanAll()
     nock('https://api.sendgrid.com').post('/v3/mail/send').reply(202)
     return sendgrid.sendMail({
-      toEmail: 'hazdiego@gmail.com',
+      toEmail: 'test',
       subject: 'Test',
       content: '<h1>Just Testing</h1>'
     }).then((res) => {
