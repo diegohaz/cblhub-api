@@ -22,14 +22,32 @@ describe('PasswordReset API', function () {
       nock('https://api.sendgrid.com').post('/v3/mail/send').reply(202)
       return request(app)
         .post('/password-resets')
-        .send({ email: 'test@example.com' })
+        .send({ email: 'test@example.com', link: 'http://example.com' })
         .expect(202)
+    })
+
+    it('should fail 400 when email was not sent', function () {
+      nock.restore() && nock.isActive() || nock.activate()
+      nock('https://api.sendgrid.com').post('/v3/mail/send').reply(202)
+      return request(app)
+        .post('/password-resets')
+        .send({ link: 'http://example.com' })
+        .expect(400)
+    })
+
+    it('should fail 400 when link was not sent', function () {
+      nock.restore() && nock.isActive() || nock.activate()
+      nock('https://api.sendgrid.com').post('/v3/mail/send').reply(202)
+      return request(app)
+        .post('/password-resets')
+        .send({ email: 'test@example.com' })
+        .expect(400)
     })
 
     it('should fail 404 when user email is not registered', function () {
       return request(app)
         .post('/password-resets')
-        .send({ email: 'test2@example.com' })
+        .send({ email: 'test2@example.com', link: 'http://example.com' })
         .expect(404)
     })
   })
