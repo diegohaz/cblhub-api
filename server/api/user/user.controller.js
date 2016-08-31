@@ -27,7 +27,7 @@ export const create = ({ body }, res) =>
     .then(success(res, 201))
     .catch((err) => {
       if (err.name === 'MongoError' && err.code === 11000) {
-        res.status(400).send(err)
+        res.status(400).send('User email already registered')
       } else {
         error(res)(err)
       }
@@ -59,6 +59,7 @@ export const update = ({ body, params, user }, res) => {
       } else {
         return result
       }
+      return null
     })
     .then((user) => user ? _.merge(user, _.omit(body, omittedPaths)).save() : null)
     .then((user) => user ? user.view(true) : null)

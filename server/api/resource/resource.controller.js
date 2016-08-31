@@ -38,14 +38,14 @@ export const update = ({ body, params, user }, res) => {
   return Resource.findById(params.id)
     .then(notFound(res))
     .then((guide) => {
-      if (!guide) return guide
+      if (!guide) return null
       const isAdmin = user.role === 'admin'
       const isSameUser = guide.user.equals(user.id)
       if (!isSameUser && !isAdmin) {
         res.status(401).end()
-      } else {
-        return guide
+        return null
       }
+      return guide
     })
     .then((guide) => guide ? _.assign(guide, _.omit(body, omittedPaths)).save() : null)
     .then((guide) => guide ? guide.view() : null)

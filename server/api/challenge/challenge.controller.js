@@ -32,14 +32,14 @@ export const update = ({ body, params, user }, res) => {
   return Challenge.findById(params.id)
     .then(notFound(res))
     .then((challenge) => {
-      if (!challenge) return challenge
+      if (!challenge) return null
       const isAdmin = user.role === 'admin'
       const isSameUser = challenge.user.equals(user.id)
       if (!isSameUser && !isAdmin) {
         res.status(401).end()
-      } else {
-        return challenge
+        return null
       }
+      return challenge
     })
     .then((challenge) => challenge ? _.assign(challenge, _.pick(body, pick)).save() : null)
     .then((challenge) => challenge ? challenge.populate('photo').execPopulate() : null)
@@ -57,9 +57,9 @@ export const destroy = ({ params, user }, res) =>
       const isSameUser = challenge.user.equals(user.id)
       if (!isSameUser && !isAdmin) {
         res.status(401).end()
-      } else {
-        return challenge
+        return null
       }
+      return challenge
     })
     .then((challenge) => challenge ? challenge.remove() : null)
     .then(success(res, 204))
