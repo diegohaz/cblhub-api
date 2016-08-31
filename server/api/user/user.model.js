@@ -52,7 +52,7 @@ UserSchema.path('email').set(function (email) {
     email = randtoken.generate(16) + '@anonymous.com'
   }
 
-  if (!this.picture) {
+  if (!this.picture || this.picture.indexOf('https://gravatar.com') === 0) {
     const hash = crypto.createHash('md5').update(email).digest('hex')
     this.picture = `https://gravatar.com/avatar/${hash}?d=identicon`
   }

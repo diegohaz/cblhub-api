@@ -37,6 +37,27 @@ describe('User Model', function () {
     })
   })
 
+  it('should not set a new picture url when the old one is not gravatar', function () {
+    return User.create({
+      email: 'test@test.com',
+      password: '123',
+      picture: 'test'
+    }).then((user) => {
+      user.email = 'test2@test.com'
+      user.save().should.eventually.have.property('picture', 'test')
+    })
+  })
+
+  it('should set a new picture url when the old one is gravatar', function () {
+    return User.create({ email: 'test@test.com', password: '123' }).then((user) => {
+      user.email = 'test2@test.com'
+      return user.save()
+    }).then((user) => {
+      const hash = crypto.createHash('md5').update('test2@test.com').digest('hex')
+      user.picture.should.be.equal(`https://gravatar.com/avatar/${hash}?d=identicon`)
+    })
+  })
+
   it('should remove user sessions after removing user', function () {
     let user
     return factory.session()
