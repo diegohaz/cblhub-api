@@ -44,7 +44,7 @@ describe('User Model', function () {
       picture: 'test'
     }).then((user) => {
       user.email = 'test2@test.com'
-      user.save().should.eventually.have.property('picture', 'test')
+      return user.save().should.eventually.have.property('picture', 'test')
     })
   })
 
