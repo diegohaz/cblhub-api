@@ -34,7 +34,7 @@ export const show = ({ params: { token } }, res) =>
   PasswordReset.findOne({ token })
     .populate('user')
     .then(notFound(res))
-    .then((reset) => reset ? reset.view() : null)
+    .then((reset) => reset ? reset.view(true) : null)
     .then(success(res))
     .catch(error(res))
 
@@ -49,7 +49,7 @@ export const update = ({ params: { token }, body: { password } }, res) => {
       const { user } = reset
       return user.set({ password }).save()
         .then(() => reset.remove())
-        .then(() => user.view())
+        .then(() => user.view(true))
     })
     .then(success(res))
     .catch(error(res))
