@@ -66,7 +66,9 @@ ChallengeSchema.pre('save', function (next) {
   const promises = []
 
   tagsModified && promises.push(this.assignTags())
-  photoModified && promises.push(this.photo.pickColor())
+  photoModified && promises.push(
+    this.populate('photo').execPopulate().then(() => this.photo.pickColor())
+  )
 
   Promise.all(promises).then(() => next()).catch(next)
 })
