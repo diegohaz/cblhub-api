@@ -4,18 +4,28 @@ import app from '../..'
 import nock from 'nock'
 import request from 'supertest-as-promised'
 import * as factory from '../../services/factory'
+import User from './user.model'
+import Session from '../session/session.model'
 
 describe('User API', function () {
-  var user, userSession, adminSession
+  let user1, user2, session1, session2, adminSession
 
-  before(function () {
+  beforeEach(function () {
     return factory.clean()
-      .then(() => factory.user())
-      .tap(u => { user = u })
-      .then(() => factory.sessions('user', 'admin'))
-      .spread((u, a) => {
-        userSession = u
-        adminSession = a
+      .then(() => User.create([
+        { name: 'Fake user', email: 'a@a.com', password: '123' },
+        { name: 'Fake user', email: 'b@b.com', password: '123' }
+      ]))
+      .then((users) => {
+        [ user1, user2 ] = users
+        return Session.create([{ user: user1 }, { user: user2 }])
+      })
+      .then((sessions) => {
+        [ session1, session2 ] = sessions
+        return factory.session('admin')
+      })
+      .then((session) => {
+        adminSession = session
       })
   })
 
@@ -25,7 +35,9 @@ describe('User API', function () {
         .get('/users')
         .query({ access_token: adminSession.token })
         .expect(200)
-        .then(({ body }) => body.should.be.instanceOf(Array))
+        .then(({ body }) => {
+          body.should.be.instanceOf(Array)
+        })
     })
 
     it('should respond with array to query page when authenticated as admin', function () {
@@ -33,7 +45,9 @@ describe('User API', function () {
         .get('/users')
         .query({ access_token: adminSession.token, page: 2, limit: 1 })
         .expect(200)
-        .then(({ body }) => body.should.be.instanceOf(Array).with.lengthOf(1))
+        .then(({ body }) => {
+          body.should.be.instanceOf(Array).with.lengthOf(1)
+        })
     })
 
     it('should respond with array to query q when authenticated as admin', function () {
@@ -60,7 +74,7 @@ describe('User API', function () {
     it('should fail 401 when authenticated as user', function () {
       return request(app)
         .get('/users')
-        .query({ access_token: userSession.token })
+        .query({ access_token: session1.token })
         .expect(401)
     })
 
@@ -75,9 +89,11 @@ describe('User API', function () {
     it('should respond with the current user profile when authenticated as user', function () {
       return request(app)
         .get('/users/me')
-        .query({ access_token: userSession.token })
+        .query({ access_token: session1.token })
         .expect(200)
-        .then(({ body }) => body.should.have.property('id', userSession.user.id))
+        .then(({ body }) => {
+          body.should.have.property('id', user1.id)
+        })
     })
 
     it('should fail 401 when not authenticated', function () {
@@ -90,9 +106,11 @@ describe('User API', function () {
   describe('GET /users/:id', function () {
     it('should respond with a user', function () {
       return request(app)
-        .get('/users/' + user.id)
+        .get('/users/' + user1.id)
         .expect(200)
-        .then(({ body }) => body.should.have.property('id', user.id))
+        .then(({ body }) => {
+          body.should.have.property('id', user1.id)
+        })
     })
 
     it('should fail 404 when user does not exist', function () {
@@ -106,10 +124,9 @@ describe('User API', function () {
     it('should respond with the created user', function () {
       return request(app)
         .post('/users')
-        .send({ email: 'a@a.com', password: 'pass' })
+        .send({ email: 'c@c.com', password: '123' })
         .expect(201)
         .then(({ body }) => {
-          user = body
           body.should.have.property('id')
         })
     })
@@ -117,7 +134,7 @@ describe('User API', function () {
     it('should respond with the created anonymous user', function () {
       return request(app)
         .post('/users')
-        .send({ email: 'anonymous', password: 'pass' })
+        .send({ email: 'anonymous', password: '123' })
         .expect(201)
         .then(({ body }) => {
           body.should.have.property('id')
@@ -127,14 +144,12 @@ describe('User API', function () {
     it('should fail 400 when email already exists', function () {
       return request(app)
         .post('/users')
-        .send({ email: 'a@a.com', password: 'pass' })
+        .send({ email: 'a@a.com', password: '123' })
         .expect(400)
     })
   })
 
   describe('POST /users/facebook', function () {
-    let fbUser
-
     beforeEach(function () {
       nock.restore() && nock.isActive() || nock.activate()
       nock('https://graph.facebook.com')
@@ -162,32 +177,17 @@ describe('User API', function () {
         .send({ access_token: '123' })
         .expect(201)
         .then(({ body }) => {
-          fbUser = body
           body.should.have.property('id')
           body.should.have.property('name', 'Test name')
           body.should.have.property('email', 'email@example.com')
         })
     })
 
-    it('should respond with the registered facebook user', function () {
-      return request(app)
-        .post('/users/facebook')
-        .send({ access_token: '123' })
-        .expect(201)
-        .then(({ body }) => {
-          body.should.have.property('id', fbUser.id)
-          body.should.have.property('name', fbUser.name)
-          body.should.have.property('email', fbUser.email)
-        })
-    })
-
     it('should respond with the registered updated user', function () {
-      let user
-      return factory.user().then((u) => {
-        user = u
+      return factory.user().then((user) => {
         user.email = 'email2@example.com'
         return user.save()
-      }).then(() => {
+      }).then((user) => {
         return request(app)
           .post('/users/facebook')
           .send({ access_token: '321' })
@@ -218,16 +218,52 @@ describe('User API', function () {
     it('should respond with the updated current user when authenticated as user', function () {
       return request(app)
         .put('/users/me')
-        .query({ access_token: userSession.token })
-        .send({ password: 'passsss' })
+        .query({ access_token: session1.token })
+        .send({ name: 'test' })
         .expect(200)
-        .then(({ body }) => body.should.have.property('id', userSession.user.id))
+        .then(({ body }) => {
+          body.should.have.property('id', user1.id)
+          body.should.have.property('name', 'test')
+        })
+    })
+
+    it('should fail 401 when trying to update password', function () {
+      return request(app)
+        .put('/users/me')
+        .query({ access_token: session1.token })
+        .send({ password: '321' })
+        .expect(401)
     })
 
     it('should fail 401 when not authenticated', function () {
       return request(app)
         .put('/users/me')
-        .send({ password: 'passsss' })
+        .send({ name: 'test' })
+        .expect(401)
+    })
+  })
+
+  describe('PUT /users/me/password', function () {
+    it('should respond 200 when authenticated with basic auth', function () {
+      return request(app)
+        .put('/users/me/password')
+        .auth('a@a.com', '123')
+        .send({ password: '321' })
+        .expect(200)
+    })
+
+    it('should fail 401 when authenticated with access token', function () {
+      return request(app)
+        .put('/users/me/password')
+        .query({ access_token: session1.token })
+        .send({ password: '321' })
+        .expect(401)
+    })
+
+    it('should fail 401 when not authenticated', function () {
+      return request(app)
+        .put('/users/me/password')
+        .send({ password: '321' })
         .expect(401)
     })
   })
@@ -235,35 +271,41 @@ describe('User API', function () {
   describe('PUT /users/:id', function () {
     it('should respond with the updated user when authenticated as admin', function () {
       return request(app)
-        .put('/users/' + user.id)
+        .put('/users/' + user1.id)
         .query({ access_token: adminSession.token })
-        .send({ name: 'Fake User 2', email: 'test2@example.com' })
+        .send({ name: 'test', email: 'test@example.com' })
         .expect(200)
-        .then(({ body }) => body.should.have.property('name', 'Fake User 2'))
+        .then(({ body }) => {
+          body.should.have.property('id', user1.id)
+          body.should.have.property('name', 'test')
+        })
     })
 
     it('should respond with the updated user when authenticated as the same', function () {
       return request(app)
-        .put('/users/' + userSession.user.id)
-        .query({ access_token: userSession.token })
-        .send({ country: 'US', password: 'passsss' })
+        .put('/users/' + user1.id)
+        .query({ access_token: session1.token })
+        .send({ name: 'test' })
         .expect(200)
-        .then(({ body }) => body.should.have.property('id', userSession.user.id))
+        .then(({ body }) => {
+          body.should.have.property('id', user1.id)
+          body.should.have.property('name', 'test')
+        })
     })
 
-    it('should fail 400 when set another user password', function () {
+    it('should fail 401 when trying to update password', function () {
       return request(app)
-        .put('/users/' + user.id)
-        .query({ access_token: adminSession.token })
-        .send({ password: 'passsss' })
-        .expect(400)
+        .put('/users/' + user1.id)
+        .query({ access_token: session1.token })
+        .send({ password: '321' })
+        .expect(401)
     })
 
     it('should fail 401 when update another user', function () {
       return request(app)
-        .put('/users/' + user.id)
-        .query({ access_token: userSession.token })
-        .send({ name: 'Fake' })
+        .put('/users/' + user1.id)
+        .query({ access_token: session2.token })
+        .send({ name: 'test' })
         .expect(401)
     })
 
@@ -271,14 +313,47 @@ describe('User API', function () {
       return request(app)
         .put('/users/123456789098765432123456')
         .query({ access_token: adminSession.token })
-        .send({ name: 'Fake User 2', email: 'test2@example.com' })
+        .send({ name: 'test', email: 'test@example.com' })
         .expect(404)
     })
 
     it('should fail 401 when not authenticated', function () {
       return request(app)
-        .put('/users/' + userSession.user.id)
-        .send({ name: 'Fake User 2', email: 'test2@example.com' })
+        .put('/users/' + user1.id)
+        .send({ name: 'test', email: 'test@example.com' })
+        .expect(401)
+    })
+  })
+
+  describe('PUT /users/:id/password', function () {
+    it('should respond 200 when authenticated with basic auth', function () {
+      return request(app)
+        .put(`/users/${user1.id}/password`)
+        .auth('a@a.com', '123')
+        .send({ password: '321' })
+        .expect(200)
+    })
+
+    it('should fail 401 when update another user', function () {
+      return request(app)
+        .put(`/users/${user1.id}/password`)
+        .auth('b@b.com', '123')
+        .send({ password: '321' })
+        .expect(401)
+    })
+
+    it('should fail 401 when authenticated with access token', function () {
+      return request(app)
+        .put(`/users/${user1.id}/password`)
+        .query({ access_token: session1.token })
+        .send({ password: '321' })
+        .expect(401)
+    })
+
+    it('should fail 401 when not authenticated', function () {
+      return request(app)
+        .put(`/users/${user1.id}/password`)
+        .send({ password: '321' })
         .expect(401)
     })
   })
@@ -286,28 +361,28 @@ describe('User API', function () {
   describe('DELETE /users/:id', function () {
     it('should delete when authenticated as admin', function () {
       return request(app)
-        .delete('/users/' + user.id)
+        .delete('/users/' + user1.id)
         .send({ access_token: adminSession.token })
         .expect(204)
     })
 
     it('should fail 404 when user does not exist', function () {
       return request(app)
-        .delete('/users/' + user.id)
+        .delete('/users/123456789098765432123456')
         .send({ access_token: adminSession.token })
         .expect(404)
     })
 
     it('should fail 401 when authenticated as user', function () {
       return request(app)
-        .delete('/users/' + user.id)
-        .send({ access_token: userSession.token })
+        .delete('/users/' + user1.id)
+        .send({ access_token: session1.token })
         .expect(401)
     })
 
     it('should fail 401 when not authenticated', function () {
       return request(app)
-        .delete('/users/' + user.id)
+        .delete('/users/' + user1.id)
         .expect(401)
     })
   })

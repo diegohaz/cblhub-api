@@ -46,22 +46,41 @@ export const createFromFacebook = ({ body }, res) => {
 
 export const update = ({ body, params, user }, res) => {
   const omittedPaths = ['_id', 'role', 'createdAt', 'updatedAt']
+  if (body.password) return res.status(401).send('You can not change password this way')
+
   return User.findById(params.id === 'me' ? user.id : params.id)
     .then(notFound(res))
     .then((result) => {
-      if (!result) return result
+      if (!result) return null
       const isAdmin = user.role === 'admin'
       const isSelfUpdate = user.id === result.id
       if (!isSelfUpdate && !isAdmin) {
-        res.status(401).end()
-      } else if (isAdmin && body.password) {
-        res.status(400).end()
-      } else {
-        return result
+        res.status(401).send('You can not change other user\'s data')
+        return null
       }
-      return null
+      return result
     })
     .then((user) => user ? _.merge(user, _.omit(body, omittedPaths)).save() : null)
+    .then((user) => user ? user.view(true) : null)
+    .then(success(res))
+    .catch(error(res))
+}
+
+export const updatePassword = ({ body: { password }, params, user }, res) => {
+  if (!password) return res.status(400).send('Missing password')
+
+  return User.findById(params.id === 'me' ? user.id : params.id)
+    .then(notFound(res))
+    .then((result) => {
+      if (!result) return null
+      const isSelfUpdate = user.id === result.id
+      if (!isSelfUpdate) {
+        res.status(401).send('You can not change other user\'s password')
+        return null
+      }
+      return result
+    })
+    .then((user) => user ? user.set({ password }).save() : null)
     .then((user) => user ? user.view(true) : null)
     .then(success(res))
     .catch(error(res))
