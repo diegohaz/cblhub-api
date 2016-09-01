@@ -1,11 +1,13 @@
 'use strict'
 
 import { Router } from 'express'
-import { create, submit } from './password-reset.controller'
+import { create, show, update } from './password-reset.controller'
 
 const router = new Router()
 
 router.post('/', create)
-router.post('/:token', submit)
+router.get('/:token', show)
+router.put('/:token', update)
+router.patch('/:token', update)
 
 export default router

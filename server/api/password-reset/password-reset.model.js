@@ -22,4 +22,13 @@ const PasswordResetSchema = new Schema({
   }
 })
 
+PasswordResetSchema.methods = {
+  view () {
+    return {
+      user: this.user.view(),
+      token: this.token
+    }
+  }
+}
+
 export default mongoose.model('PasswordReset', PasswordResetSchema)

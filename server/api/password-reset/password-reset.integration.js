@@ -7,12 +7,12 @@ import * as factory from '../../services/factory'
 import User from '../user/user.model'
 import PasswordReset from './password-reset.model'
 
-describe('PasswordReset API', function () {
+describe.only('PasswordReset API', function () {
   let user
 
   beforeEach(function () {
     return factory.clean()
-      .then(() => User.create({ email: 'test@example.com', password: 'pass' }))
+      .then(() => User.create({ email: 'a@a.com', password: '123' }))
       .then((u) => { user = u })
   })
 
@@ -22,7 +22,7 @@ describe('PasswordReset API', function () {
       nock('https://api.sendgrid.com').post('/v3/mail/send').reply(202)
       return request(app)
         .post('/password-resets')
-        .send({ email: 'test@example.com', link: 'http://example.com' })
+        .send({ email: 'a@a.com', link: 'http://example.com' })
         .expect(202)
     })
 
@@ -40,34 +40,67 @@ describe('PasswordReset API', function () {
       nock('https://api.sendgrid.com').post('/v3/mail/send').reply(202)
       return request(app)
         .post('/password-resets')
-        .send({ email: 'test@example.com' })
+        .send({ email: 'a@a.com' })
         .expect(400)
     })
 
     it('should fail 404 when user email is not registered', function () {
       return request(app)
         .post('/password-resets')
-        .send({ email: 'test2@example.com', link: 'http://example.com' })
+        .send({ email: 'b@b.com', link: 'http://example.com' })
         .expect(404)
     })
   })
 
-  describe('POST /password-resets/:token', function () {
-    it('should respond with the user session', function () {
+  describe('GET /password-resets/:token', function () {
+    it('should respond with the password reset entity', function () {
       return PasswordReset.create({ user }).then((passwordReset) => {
         return request(app)
-          .post('/password-resets/' + passwordReset.token)
+          .get('/password-resets/' + passwordReset.token)
           .expect(200)
       }).then(({ body }) => {
         body.should.have.deep.property('user.id', user.id)
         body.should.have.property('token')
-        return PasswordReset.find({}).should.eventually.have.lengthOf(0)
       })
     })
 
-    it('should fail 404 when token is not registered', function () {
+    it('should fail 404 when token does not exist', function () {
       return request(app)
-        .post('/password-resets/123')
+        .get('/password-resets/123')
+        .expect(404)
+    })
+  })
+
+  describe('PUT /password-resets/:token', function () {
+    let passwordReset
+
+    beforeEach(function () {
+      return PasswordReset.create({ user }).then((reset) => {
+        passwordReset = reset
+      })
+    })
+
+    it('should respond with the updated user and remove the token', function () {
+      return request(app)
+        .put('/password-resets/' + passwordReset.token)
+        .send({ password: '321' })
+        .expect(200)
+        .then(({ body }) => {
+          body.should.have.property('id', user.id)
+          return PasswordReset.find({}).should.eventually.have.lengthOf(0)
+        })
+    })
+
+    it('should fail 400 when password was not sent', function () {
+      return request(app)
+        .put('/password-resets/' + passwordReset.token)
+        .expect(400)
+    })
+
+    it('should fail 404 when token does not exist', function () {
+      return request(app)
+        .put('/password-resets/123')
+        .send({ password: '321' })
         .expect(404)
     })
   })
