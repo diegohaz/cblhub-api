@@ -23,5 +23,5 @@ export const getPhotos = (text, { limit = 20, page = 1 } = {}) =>
     }
   }).then((res) => {
     if (res.stat !== 'ok') throw new Error(res.stat)
-    return res.photos.photo
+    return res.photos.photo.filter((photo) => photo.url_l)
   })
