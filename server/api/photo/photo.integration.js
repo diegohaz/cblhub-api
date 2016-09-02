@@ -29,16 +29,6 @@ describe('Photo API', function () {
           body.should.all.have.property('id')
         })
     })
-
-    vcr.it('should respond with array to pagination', function () {
-      return request(app)
-        .get('/photos/search')
-        .query({ q: 'Jupiter', limit: 1, page: 2 })
-        .expect(200)
-        .then(({ body }) => {
-          body.should.be.instanceOf(Array).and.have.lengthOf(1)
-        })
-    })
   })
 
   describe('GET /photos', function () {

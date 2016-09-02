@@ -7,7 +7,7 @@ import * as factory from '../../services/factory'
 import User from '../user/user.model'
 import PasswordReset from './password-reset.model'
 
-describe.only('PasswordReset API', function () {
+describe('PasswordReset API', function () {
   let user
 
   beforeEach(function () {

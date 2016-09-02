@@ -73,7 +73,7 @@ PhotoSchema.statics = {
 
     photo._id = flickrPhoto.id
     photo.owner = flickrPhoto.ownername
-    photo.url = `https://www.flickr.com/photos/${photo.owner}/${photo._id}`
+    photo.url = `https://www.flickr.com/photos/${flickrPhoto.owner}/${photo._id}`
     photo.title = flickrPhoto.title
 
     sizes.forEach((size, i) => {
