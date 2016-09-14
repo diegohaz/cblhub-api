@@ -19,7 +19,6 @@ passport.use(new BasicStrategy((email, password, done) => {
 
 passport.use(new BearerStrategy({ passReqToCallback: true }, (req, token, done) => {
   Session.login(token).then((session) => {
-    req.session = session
     done(null, session.user)
   }).catch(done)
 }))

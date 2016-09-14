@@ -3,7 +3,7 @@ import del from 'del'
 import lazypipe from 'lazypipe'
 import loadPlugins from 'gulp-load-plugins'
 import runSequence from 'run-sequence'
-import {Instrumenter} from 'isparta'
+import { Instrumenter } from 'isparta'
 
 const paths = {}
 paths.server = 'server'
@@ -62,18 +62,18 @@ gulp.task('env:all', () => {
   } catch (e) {
     vars = {}
   }
-  plugins.env({vars})
+  plugins.env({ vars })
 })
 
 gulp.task('env:test', () => {
   plugins.env({
-    vars: {NODE_ENV: 'test'}
+    vars: { NODE_ENV: 'test' }
   })
 })
 
 gulp.task('env:prod', () => {
   plugins.env({
-    vars: {NODE_ENV: 'production'}
+    vars: { NODE_ENV: 'production' }
   })
 })
 
@@ -81,6 +81,16 @@ gulp.task('lint', () => {
   return gulp.src(paths.scripts)
     .pipe(plugins.eslint())
     .pipe(plugins.eslint.format())
+})
+
+gulp.task('mocha:unit', () => {
+  return gulp.src(paths.test.unit)
+    .pipe(mocha())
+})
+
+gulp.task('mocha:integration', () => {
+  return gulp.src(paths.test.integration)
+    .pipe(mocha())
 })
 
 gulp.task('test:pre', () => {
@@ -92,15 +102,33 @@ gulp.task('test:pre', () => {
     .pipe(plugins.istanbul.hookRequire())
 })
 
-gulp.task('test:unit', () => {
-  return gulp.src(paths.test.unit)
-    .pipe(mocha())
+gulp.task('istanbul', () => {
+  return gulp.src(paths.scripts)
+    .pipe(istanbul())
 })
 
-gulp.task('test:integration', () => {
-  return gulp.src(paths.test.integration)
-    .pipe(mocha())
-    .pipe(istanbul())
+gulp.task('test:unit', (cb) => {
+  runSequence(
+    'lint',
+    'test:pre',
+    'env:all',
+    'env:test',
+    'mocha:unit',
+    'istanbul',
+    cb
+  )
+})
+
+gulp.task('test:integration', (cb) => {
+  runSequence(
+    'lint',
+    'test:pre',
+    'env:all',
+    'env:test',
+    'mocha:integration',
+    'istanbul',
+    cb
+  )
 })
 
 gulp.task('test', (cb) => {
@@ -109,8 +137,9 @@ gulp.task('test', (cb) => {
     'test:pre',
     'env:all',
     'env:test',
-    'test:unit',
-    'test:integration',
+    'mocha:unit',
+    'mocha:integration',
+    'istanbul',
     cb
   )
 })
