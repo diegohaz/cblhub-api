@@ -1,9 +1,11 @@
 import test from 'ava'
-import nock from 'nock'
+import Promise from 'bluebird'
+import { stub } from 'sinon'
 import request from 'supertest-as-promised'
 import mockgoose from 'mockgoose'
 import { masterKey } from '../../config'
 import { verify } from '../../services/jwt'
+import * as facebook from '../../services/facebook'
 import express from '../../config/express'
 import mongoose from '../../config/mongoose'
 import routes from '.'
@@ -98,14 +100,12 @@ test.serial('POST /auth 401 (master) - missing auth', async (t) => {
 })
 
 test.serial('POST /auth/facebook 201', async (t) => {
-  const fbUser = {
+  stub(facebook, 'getMe', () => Promise.resolve({
     id: '123',
     name: 'user',
     email: 'b@b.com',
-    picture: { data: { url: 'test.jpg' } }
-  }
-  nock.restore() && nock.isActive() || nock.activate()
-  nock('https://graph.facebook.com').get('/me').query(true).reply(200, fbUser)
+    picture: 'test.jpg'
+  }))
   const { status, body } = await request(app())
     .post('/facebook')
     .send({ access_token: '123' })
@@ -117,6 +117,7 @@ test.serial('POST /auth/facebook 201', async (t) => {
 })
 
 test.serial('POST /auth/facebook 401 - missing token', async (t) => {
-  const { status } = await request(app()).post('/facebook')
+  const { status } = await request(app())
+    .post('/facebook')
   t.true(status === 401)
 })

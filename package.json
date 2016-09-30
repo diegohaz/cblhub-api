@@ -16,7 +16,7 @@
     "copy": "copy package.json dist && copy src/**/package.json dist/src",
     "transpile": "babel src -d dist/src -s inline -i 'src/**/*.test.js'",
     "build": "npm run clean && npm run copy && npm run transpile",
-    "docs": "apidoc -i src -o docs && apidoc-markdown -p docs -o README.md && opn docs/index.html"
+    "docs": "apidoc -i src -o docs && apidoc-markdown -p docs -o DOCS.md && opn docs/index.html"
   },
   "babel": {
     "presets": [

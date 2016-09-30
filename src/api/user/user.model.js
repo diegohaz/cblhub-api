@@ -8,7 +8,7 @@ import { env } from '../../config'
 const compare = require('bluebird').promisify(bcrypt.compare)
 const roles = ['user', 'admin']
 
-const UserSchema = new Schema({
+const userSchema = new Schema({
   email: {
     type: String,
     match: /^\S+@\S+\.\S+$/,
@@ -27,8 +27,8 @@ const UserSchema = new Schema({
     index: true,
     trim: true
   },
-  facebook: {
-    id: String
+  services: {
+    facebook: String
   },
   role: {
     type: String,
@@ -43,7 +43,7 @@ const UserSchema = new Schema({
   timestamps: true
 })
 
-UserSchema.path('email').set(function (email) {
+userSchema.path('email').set(function (email) {
   if (!this.picture || this.picture.indexOf('https://gravatar.com') === 0) {
     const hash = crypto.createHash('md5').update(email).digest('hex')
     this.picture = `https://gravatar.com/avatar/${hash}?d=identicon`
@@ -56,7 +56,7 @@ UserSchema.path('email').set(function (email) {
   return email
 })
 
-UserSchema.pre('save', function (next) {
+userSchema.pre('save', function (next) {
   if (!this.isModified('password')) return next()
 
   /* istanbul ignore next */
@@ -70,7 +70,7 @@ UserSchema.pre('save', function (next) {
   })
 })
 
-UserSchema.methods = {
+userSchema.methods = {
   view (full) {
     let view = {}
     let fields = ['id', 'name', 'picture']
@@ -89,30 +89,24 @@ UserSchema.methods = {
   }
 }
 
-UserSchema.statics = {
+userSchema.statics = {
   roles,
 
-  createFromFacebook ({ id, name, email, picture }) {
-    return this.findOne({ $or: [{ 'facebook.id': id }, { email }] }).then((user) => {
+  createFromService ({ service, id, email, name, picture }) {
+    return this.findOne({ $or: [{ [`services.${service}`]: id }, { email }] }).then((user) => {
       if (user) {
-        user.facebook.id = id
+        user.services[service] = id
         user.name = name
-        user.picture = picture.data.url
+        user.picture = picture
         return user.save()
       } else {
         const password = randtoken.generate(16)
-        return this.create({
-          name,
-          email,
-          password,
-          facebook: { id },
-          picture: picture && picture.data && picture.data.url
-        })
+        return this.create({ services: { [service]: id }, email, password, name, picture })
       }
     })
   }
 }
 
-UserSchema.plugin(mongooseKeywords, { paths: ['email', 'name'] })
+userSchema.plugin(mongooseKeywords, { paths: ['email', 'name'] })
 
-export default mongoose.model('User', UserSchema)
+export default mongoose.model('User', userSchema)
