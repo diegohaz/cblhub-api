@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import { success, notFound } from '../../services/response/'
+import { success, notFound, authorOrAdmin } from '../../services/response/'
 import { Guide } from '.'
 
 export const create = ({ user, bodymen: { body } }, res, next) =>
@@ -28,16 +28,7 @@ export const update = ({ user, bodymen: { body }, params }, res, next) =>
   Guide.findById(params.id)
     .populate('user challenge tags guides')
     .then(notFound(res))
-    .then((guide) => {
-      if (!guide) return null
-      const isAdmin = user.role === 'admin'
-      const isSameUser = guide.user.equals(user.id)
-      if (!isSameUser && !isAdmin) {
-        res.status(401).end()
-        return null
-      }
-      return guide
-    })
+    .then(authorOrAdmin(res, user, 'user'))
     .then((guide) => {
       if (!guide) return null
       return _.mergeWith(guide, body, (guideValue, bodyValue) => {
@@ -62,16 +53,7 @@ export const update = ({ user, bodymen: { body }, params }, res, next) =>
 export const destroy = ({ user, params }, res, next) =>
   Guide.findById(params.id)
     .then(notFound(res))
-    .then((guide) => {
-      if (!guide) return null
-      const isAdmin = user.role === 'admin'
-      const isSameUser = guide.user.equals(user.id)
-      if (!isSameUser && !isAdmin) {
-        res.status(401).end()
-        return null
-      }
-      return guide
-    })
+    .then(authorOrAdmin(res, user, 'user'))
     .then((guide) => guide ? guide.remove() : null)
     .then(success(res, 204))
     .catch(next)

@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import { success, notFound } from '../../services/response/'
+import { success, notFound, authorOrAdmin } from '../../services/response/'
 import { Activity } from '.'
 
 export const create = ({ user, bodymen: { body } }, res, next) =>
@@ -27,16 +27,7 @@ export const update = ({ user, bodymen: { body }, params }, res, next) =>
   Activity.findById(params.id)
     .populate('user challenge tags guides')
     .then(notFound(res))
-    .then((activity) => {
-      if (!activity) return null
-      const isAdmin = user.role === 'admin'
-      const isSameUser = activity.user.equals(user.id)
-      if (!isSameUser && !isAdmin) {
-        res.status(401).end()
-        return null
-      }
-      return activity
-    })
+    .then(authorOrAdmin(res, user, 'user'))
     .then((activity) => {
       if (!activity) return null
       return _.mergeWith(activity, body, (activityValue, bodyValue) => {
@@ -61,16 +52,7 @@ export const update = ({ user, bodymen: { body }, params }, res, next) =>
 export const destroy = ({ user, params }, res, next) =>
   Activity.findById(params.id)
     .then(notFound(res))
-    .then((activity) => {
-      if (!activity) return null
-      const isAdmin = user.role === 'admin'
-      const isSameUser = activity.user.equals(user.id)
-      if (!isSameUser && !isAdmin) {
-        res.status(401).end()
-        return null
-      }
-      return activity
-    })
+    .then(authorOrAdmin(res, user, 'user'))
     .then((activity) => activity ? activity.remove() : null)
     .then(success(res, 204))
     .catch(next)

@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import { success, notFound } from '../../services/response/'
+import { success, notFound, authorOrAdmin } from '../../services/response/'
 import { Challenge } from './'
 
 export const create = ({ user, bodymen: { body } }, res, next) =>
@@ -24,16 +24,7 @@ export const show = ({ params }, res, next) =>
 export const update = ({ user, bodymen: { body }, params }, res, next) =>
   Challenge.findById(params.id)
     .then(notFound(res))
-    .then((challenge) => {
-      if (!challenge) return null
-      const isAdmin = user.role === 'admin'
-      const isSameUser = challenge.user.equals(user.id)
-      if (!isSameUser && !isAdmin) {
-        res.status(401).end()
-        return null
-      }
-      return challenge
-    })
+    .then(authorOrAdmin(res, user, 'user'))
     .then((challenge) => challenge ? _.merge(challenge, body).save() : null)
     .then((challenge) => challenge ? challenge.view(true) : null)
     .then(success(res))
@@ -42,16 +33,7 @@ export const update = ({ user, bodymen: { body }, params }, res, next) =>
 export const destroy = ({ user, params }, res, next) =>
   Challenge.findById(params.id)
     .then(notFound(res))
-    .then((challenge) => {
-      if (!challenge) return null
-      const isAdmin = user.role === 'admin'
-      const isSameUser = challenge.user.equals(user.id)
-      if (!isSameUser && !isAdmin) {
-        res.status(401).end()
-        return null
-      }
-      return challenge
-    })
+    .then(authorOrAdmin(res, user, 'user'))
     .then((challenge) => challenge ? challenge.remove() : null)
     .then(success(res, 204))
     .catch(next)

@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import { success, notFound } from '../../services/response/'
+import { success, notFound, authorOrAdmin } from '../../services/response/'
 import { getMeta } from '../../services/meta'
 import { Resource } from '.'
 
@@ -33,16 +33,7 @@ export const update = ({ user, bodymen: { body }, params }, res, next) =>
   Resource.findById(params.id)
     .populate('user challenge tags guides')
     .then(notFound(res))
-    .then((resource) => {
-      if (!resource) return null
-      const isAdmin = user.role === 'admin'
-      const isSameUser = resource.user.equals(user.id)
-      if (!isSameUser && !isAdmin) {
-        res.status(401).end()
-        return null
-      }
-      return resource
-    })
+    .then(authorOrAdmin(res, user, 'user'))
     .then((resource) => {
       if (!resource) return null
       return _.mergeWith(resource, body, (resourceValue, bodyValue) => {
@@ -67,16 +58,7 @@ export const update = ({ user, bodymen: { body }, params }, res, next) =>
 export const destroy = ({ user, params }, res, next) =>
   Resource.findById(params.id)
     .then(notFound(res))
-    .then((resource) => {
-      if (!resource) return null
-      const isAdmin = user.role === 'admin'
-      const isSameUser = resource.user.equals(user.id)
-      if (!isSameUser && !isAdmin) {
-        res.status(401).end()
-        return null
-      }
-      return resource
-    })
+    .then(authorOrAdmin(res, user, 'user'))
     .then((resource) => resource ? resource.remove() : null)
     .then(success(res, 204))
     .catch(next)

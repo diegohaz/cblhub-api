@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import { success, notFound } from '../../services/response/'
+import { success, notFound, authorOrAdmin } from '../../services/response/'
 import { Question } from '.'
 
 export const create = ({ user, bodymen: { body } }, res, next) =>
@@ -27,16 +27,7 @@ export const update = ({ user, bodymen: { body }, params }, res, next) =>
   Question.findById(params.id)
     .populate('user challenge tags guides')
     .then(notFound(res))
-    .then((question) => {
-      if (!question) return null
-      const isAdmin = user.role === 'admin'
-      const isSameUser = question.user.equals(user.id)
-      if (!isSameUser && !isAdmin) {
-        res.status(401).end()
-        return null
-      }
-      return question
-    })
+    .then(authorOrAdmin(res, user, 'user'))
     .then((question) => {
       if (!question) return null
       return _.mergeWith(question, body, (questionValue, bodyValue) => {
@@ -61,16 +52,7 @@ export const update = ({ user, bodymen: { body }, params }, res, next) =>
 export const destroy = ({ user, params }, res, next) =>
   Question.findById(params.id)
     .then(notFound(res))
-    .then((question) => {
-      if (!question) return null
-      const isAdmin = user.role === 'admin'
-      const isSameUser = question.user.equals(user.id)
-      if (!isSameUser && !isAdmin) {
-        res.status(401).end()
-        return null
-      }
-      return question
-    })
+    .then(authorOrAdmin(res, user, 'user'))
     .then((question) => question ? question.remove() : null)
     .then(success(res, 204))
     .catch(next)
