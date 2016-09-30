@@ -1,0 +1,6 @@
+{
+  "name": "challenge",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./challenge.router.js"
+}

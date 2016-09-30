@@ -1,0 +1,6 @@
+{
+  "name": "photo",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./photo.router.js"
+}

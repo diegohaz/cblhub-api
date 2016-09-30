@@ -1,10 +1,8 @@
 language: node_js
-services: mongodb
 node_js:
-- '4'
-- '6'
-before_script:
-- npm install -g gulp
+- v4
+- v5
+- v6
 addons:
   apt:
     sources:
@@ -15,5 +13,8 @@ addons:
 env:
   global:
   - CXX=g++-4.8
-  matrix:
-    secure: QyjTzodebi6M/fb7eJPseUT4b1fiCA+f51oLLKMOcz1ynRD4ehkSN3oqceOIE+fiLI2hthmwhrpgfGAHQETQYM2mRr76nmfjezYQzyB23pA1q/hiYXhN8c+gnbbcMcVXbRiSv7sGVjYi9ld3VqJUubc9z8d7DB1Eoy544YIv2uwM/QRRvHpnkNZht95G3KTwaxo3O8D5kGQmJLi0gJofRQ3DjZs/gnTSKG6Baouh/jVvaYzjIQuSKTJkt23A2RzWDtH/TbkantV9IfqwCl7FaJkNKA078pIku9DMZiUaomkHT+V4eiLPM/h2Dvk8K7EHnZC3EPveNJERSNjXCql+BqZbIYCPOqrqp34v5fY1dSZj9Vb7FR3IvWKg6n92aPV1pOOoqy8d0npwNPie33K2Ov9SeQpdhcilcLUbKnlMmVyLCop8FpXkJZjcsEVzYrhKJCc01+oNFOLUGF97xlBq4VYlg8ykViTS7mLcVVwyo4jhfxEVZMhDdwgSHN5juwLJztxrJ499Mq4pokptH0f6S++Vcy4d57vP1/0UBldmIrXpHLZaMuH3CmxlSGYNmf/NCCdyUEZ9lO1JgQJzw08qKUAEKq8CyabPR9237aECzODNSF9wOx2obACUPwz2G66pkJpu3b0PvdWJx50wBWY641jz0m9BdaLy+j9JBYF4Is4=
+  - SENDGRID_KEY=sendgridKey
+  - FLICKR_KEY=flickrKey
+  - WATSON_KEY=watsonKey
+  - MASTER_KEY=masterKey
+  - JWT_SECRET=jwtSecret
