@@ -4,7 +4,8 @@ import { BasicStrategy } from 'passport-http'
 import { Strategy as BearerStrategy } from 'passport-http-bearer'
 import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt'
 import { jwtSecret, masterKey } from '../../config'
-import { getMe } from '../facebook'
+import * as facebookService from '../facebook'
+import * as githubService from '../github'
 import User, { schema } from '../../api/user/user.model'
 
 export const basic = () => (req, res, next) =>
@@ -19,9 +20,11 @@ export const basic = () => (req, res, next) =>
       next()
     })
   })(req, res, next)
-
 export const facebook = () =>
   passport.authenticate('facebook', { session: false })
+
+export const github = () =>
+  passport.authenticate('github', { session: false })
 
 export const master = () =>
   passport.authenticate('master', { session: false })
@@ -57,7 +60,16 @@ passport.use('basic', new BasicStrategy((email, password, done) => {
 }))
 
 passport.use('facebook', new BearerStrategy((sessionToken, done) => {
-  getMe({ sessionToken, fields: 'id, name, email, picture' }).then((user) => {
+  facebookService.getMe({ sessionToken }).then((user) => {
+    return User.createFromService(user)
+  }).then((user) => {
+    done(null, user)
+    return null
+  }).catch(done)
+}))
+
+passport.use('github', new BearerStrategy((sessionToken, done) => {
+  githubService.getMe({ sessionToken }).then((user) => {
     return User.createFromService(user)
   }).then((user) => {
     done(null, user)

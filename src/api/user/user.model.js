@@ -28,7 +28,8 @@ const userSchema = new Schema({
     trim: true
   },
   services: {
-    facebook: String
+    facebook: String,
+    github: String
   },
   role: {
     type: String,

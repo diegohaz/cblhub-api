@@ -6,6 +6,7 @@ import mockgoose from 'mockgoose'
 import { masterKey } from '../../config'
 import { verify } from '../../services/jwt'
 import * as facebook from '../../services/facebook'
+import * as github from '../../services/github'
 import express from '../../config/express'
 import mongoose from '../../config/mongoose'
 import routes from '.'
@@ -101,6 +102,7 @@ test.serial('POST /auth 401 (master) - missing auth', async (t) => {
 
 test.serial('POST /auth/facebook 201', async (t) => {
   stub(facebook, 'getMe', () => Promise.resolve({
+    service: 'facebook',
     id: '123',
     name: 'user',
     email: 'b@b.com',
@@ -119,5 +121,29 @@ test.serial('POST /auth/facebook 201', async (t) => {
 test.serial('POST /auth/facebook 401 - missing token', async (t) => {
   const { status } = await request(app())
     .post('/facebook')
+  t.true(status === 401)
+})
+
+test.serial('POST /auth/github 201', async (t) => {
+  stub(github, 'getMe', () => Promise.resolve({
+    service: 'github',
+    id: '123',
+    name: 'user',
+    email: 'b@b.com',
+    picture: 'test.jpg'
+  }))
+  const { status, body } = await request(app())
+    .post('/github')
+    .send({ access_token: '123' })
+  t.true(status === 201)
+  t.true(typeof body === 'object')
+  t.true(typeof body.token === 'string')
+  t.true(typeof body.user === 'object')
+  t.notThrows(verify(body.token))
+})
+
+test.serial('POST /auth/github 401 - missing token', async (t) => {
+  const { status } = await request(app())
+    .post('/github')
   t.true(status === 401)
 })

@@ -3,8 +3,9 @@
     "srcDir": "src",
     "apiDir": "api",
     "authMethods": [
-      "email",
-      "facebook"
+      "password",
+      "facebook",
+      "github"
     ]
   }
 }

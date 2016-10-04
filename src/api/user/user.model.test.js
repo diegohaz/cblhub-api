@@ -50,34 +50,79 @@ test('authenticate', async (t) => {
   t.falsy(await t.context.user.authenticate('blah'))
 })
 
-test('createFromService', async (t) => {
-  const { User, user } = t.context
-  const serviceUser = {
-    service: 'facebook',
-    id: '123',
-    name: 'Test Name',
-    email: 'test@test.com',
-    picture: 'test.jpg'
-  }
+const serviceUser = {
+  id: '123',
+  name: 'Test Name',
+  email: 'test@test.com',
+  picture: 'test.jpg'
+}
 
-  const updatedUser = await User.createFromService({ ...serviceUser, email: 'a@a.com' })
+test('createFromService (facebook) - email already registered', async (t) => {
+  const { User, user } = t.context
+  const updatedUser = await User.createFromService({
+    ...serviceUser,
+    service: 'facebook',
+    email: 'a@a.com'
+  })
   t.true(updatedUser.id === user.id)
   t.true(updatedUser.services.facebook === serviceUser.id)
   t.true(updatedUser.name === serviceUser.name)
   t.true(updatedUser.email === user.email)
   t.true(updatedUser.picture === serviceUser.picture)
+})
 
-  const updatedFbUser = await User.createFromService(serviceUser)
-  t.true(updatedFbUser.id === user.id)
-  t.true(updatedFbUser.services.facebook === serviceUser.id)
-  t.true(updatedFbUser.name === serviceUser.name)
-  t.true(updatedFbUser.email === user.email)
-  t.true(updatedFbUser.picture === serviceUser.picture)
+test('createFromService (facebook) - service id already registered', async (t) => {
+  const { User, user } = t.context
+  await user.set({ services: { facebook: serviceUser.id } }).save()
+  const updatedUser = await User.createFromService({ ...serviceUser, service: 'facebook' })
+  t.true(updatedUser.id === user.id)
+  t.true(updatedUser.services.facebook === serviceUser.id)
+  t.true(updatedUser.name === serviceUser.name)
+  t.true(updatedUser.email === user.email)
+  t.true(updatedUser.picture === serviceUser.picture)
+})
 
-  const createdFbUser = await User.createFromService({ ...serviceUser, id: '321' })
-  t.true(createdFbUser.id !== user.id)
-  t.true(createdFbUser.services.facebook === '321')
-  t.true(createdFbUser.name === serviceUser.name)
-  t.true(createdFbUser.email === serviceUser.email)
-  t.true(createdFbUser.picture === serviceUser.picture)
+test('createFromService (facebook) - new user', async (t) => {
+  const { User, user } = t.context
+  const createdUser = await User.createFromService({ ...serviceUser, service: 'facebook' })
+  t.true(createdUser.id !== user.id)
+  t.true(createdUser.services.facebook === '123')
+  t.true(createdUser.name === serviceUser.name)
+  t.true(createdUser.email === serviceUser.email)
+  t.true(createdUser.picture === serviceUser.picture)
+})
+
+test('createFromService (github) - email already registered', async (t) => {
+  const { User, user } = t.context
+  const updatedUser = await User.createFromService({
+    ...serviceUser,
+    service: 'github',
+    email: 'a@a.com'
+  })
+  t.true(updatedUser.id === user.id)
+  t.true(updatedUser.services.github === serviceUser.id)
+  t.true(updatedUser.name === serviceUser.name)
+  t.true(updatedUser.email === user.email)
+  t.true(updatedUser.picture === serviceUser.picture)
+})
+
+test('createFromService (github) - service id already registered', async (t) => {
+  const { User, user } = t.context
+  await user.set({ services: { github: serviceUser.id } }).save()
+  const updatedUser = await User.createFromService({ ...serviceUser, service: 'github' })
+  t.true(updatedUser.id === user.id)
+  t.true(updatedUser.services.github === serviceUser.id)
+  t.true(updatedUser.name === serviceUser.name)
+  t.true(updatedUser.email === user.email)
+  t.true(updatedUser.picture === serviceUser.picture)
+})
+
+test('createFromService (github) - new user', async (t) => {
+  const { User, user } = t.context
+  const createdUser = await User.createFromService({ ...serviceUser, service: 'github' })
+  t.true(createdUser.id !== user.id)
+  t.true(createdUser.services.github === '123')
+  t.true(createdUser.name === serviceUser.name)
+  t.true(createdUser.email === serviceUser.email)
+  t.true(createdUser.picture === serviceUser.picture)
 })
