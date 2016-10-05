@@ -17,7 +17,7 @@ const emailRequest = (accessToken) => request({
   }
 })
 
-export const getMe = ({ accessToken }) =>
+export const getMe = (accessToken) =>
   Promise.all([userRequest(accessToken), emailRequest(accessToken)])
     .spread((responseOfUserReq, responseOfEmailReq) => ({
       service: 'github',

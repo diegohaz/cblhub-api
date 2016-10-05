@@ -1,6 +1,6 @@
 import request from 'request-promise'
 
-export const getMe = ({ accessToken }) =>
+export const getMe = (accessToken) =>
   request({
     uri: 'https://graph.facebook.com/me',
     json: true,
@@ -14,4 +14,4 @@ export const getMe = ({ accessToken }) =>
     id,
     name,
     email
-  }))
+  })).catch(console.log)

@@ -12,7 +12,7 @@ test('getMe', async (t) => {
 
   nock('https://graph.facebook.com').get('/me').query(true).reply(200, fbUser)
 
-  const data = await facebook.getMe({ accessToken: '123' })
+  const data = await facebook.getMe('123')
   t.true(data.service === 'facebook')
   t.true(data.id === fbUser.id)
   t.true(data.name === fbUser.name)

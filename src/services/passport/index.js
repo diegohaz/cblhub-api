@@ -59,8 +59,8 @@ passport.use('basic', new BasicStrategy((email, password, done) => {
   })
 }))
 
-passport.use('facebook', new BearerStrategy((sessionToken, done) => {
-  facebookService.getMe({ sessionToken }).then((user) => {
+passport.use('facebook', new BearerStrategy((accessToken, done) => {
+  facebookService.getMe(accessToken).then((user) => {
     return User.createFromService(user)
   }).then((user) => {
     done(null, user)
@@ -68,8 +68,8 @@ passport.use('facebook', new BearerStrategy((sessionToken, done) => {
   }).catch(done)
 }))
 
-passport.use('github', new BearerStrategy((sessionToken, done) => {
-  githubService.getMe({ sessionToken }).then((user) => {
+passport.use('github', new BearerStrategy((accessToken, done) => {
+  githubService.getMe(accessToken).then((user) => {
     return User.createFromService(user)
   }).then((user) => {
     done(null, user)
