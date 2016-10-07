@@ -126,3 +126,38 @@ test('createFromService (github) - new user', async (t) => {
   t.true(createdUser.email === serviceUser.email)
   t.true(createdUser.picture === serviceUser.picture)
 })
+
+test('createFromService (google) - email already registered', async (t) => {
+  const { User, user } = t.context
+  const updatedUser = await User.createFromService({
+    ...serviceUser,
+    service: 'google',
+    email: 'a@a.com'
+  })
+  t.true(updatedUser.id === user.id)
+  t.true(updatedUser.services.google === serviceUser.id)
+  t.true(updatedUser.name === serviceUser.name)
+  t.true(updatedUser.email === user.email)
+  t.true(updatedUser.picture === serviceUser.picture)
+})
+
+test('createFromService (google) - service id already registered', async (t) => {
+  const { User, user } = t.context
+  await user.set({ services: { google: serviceUser.id } }).save()
+  const updatedUser = await User.createFromService({ ...serviceUser, service: 'google' })
+  t.true(updatedUser.id === user.id)
+  t.true(updatedUser.services.google === serviceUser.id)
+  t.true(updatedUser.name === serviceUser.name)
+  t.true(updatedUser.email === user.email)
+  t.true(updatedUser.picture === serviceUser.picture)
+})
+
+test('createFromService (google) - new user', async (t) => {
+  const { User, user } = t.context
+  const createdUser = await User.createFromService({ ...serviceUser, service: 'google' })
+  t.true(createdUser.id !== user.id)
+  t.true(createdUser.services.google === '123')
+  t.true(createdUser.name === serviceUser.name)
+  t.true(createdUser.email === serviceUser.email)
+  t.true(createdUser.picture === serviceUser.picture)
+})

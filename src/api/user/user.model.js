@@ -29,7 +29,8 @@ const userSchema = new Schema({
   },
   services: {
     facebook: String,
-    github: String
+    github: String,
+    google: String
   },
   role: {
     type: String,
