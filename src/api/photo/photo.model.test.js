@@ -1,6 +1,4 @@
 import test from 'ava'
-import { stub } from 'sinon'
-import jimp from 'jimp'
 import mockgoose from 'mockgoose'
 import mongoose from '../../config/mongoose'
 import { schema } from '.'

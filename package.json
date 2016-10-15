@@ -59,6 +59,7 @@
     "eslint-config-standard": "^6.0.0",
     "eslint-plugin-promise": "^2.0.1",
     "eslint-plugin-standard": "^2.0.0",
+    "jest-cli": "^16.0.1",
     "mockgoose": "^6.0.8",
     "nock": "^8.0.0",
     "nock-vcr-recorder": "^0.1.5",
@@ -70,6 +71,7 @@
     "supertest-as-promised": "^4.0.0"
   },
   "dependencies": {
+    "babel-eslint": "latest",
     "babel-runtime": "^6.11.6",
     "bcrypt": "^0.8.6",
     "bluebird": "^3.4.0",
@@ -77,7 +79,7 @@
     "bodymen": "^1.0.2",
     "compression": "^1.6.2",
     "cors": "^2.7.1",
-    "crypto": "0.0.3",
+    "eslint-plugin-promise": "latest",
     "express": "^4.13.4",
     "express-force-ssl": "^0.3.2",
     "jimp": "^0.2.27",
