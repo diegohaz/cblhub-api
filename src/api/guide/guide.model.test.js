@@ -1,105 +1,94 @@
-import test from 'ava'
 import { stub } from 'sinon'
-import mockgoose from 'mockgoose'
-import mongoose from '../../config/mongoose'
 import * as watson from '../../services/watson'
-import { schema } from '.'
-import { schema as userSchema } from '../user'
-import { schema as challengeSchema } from '../challenge'
-import { schema as tagSchema } from '../tag'
+import { Guide } from '.'
+import { User } from '../user'
+import { Challenge } from '../challenge'
 
-let getKeywords
+const getKeywords = stub(watson, 'getKeywords', () => ['k1', 'k2'])
 
-test.before((t) => {
-  getKeywords = watson.getKeywords.restore
-    ? watson.getKeywords
-    : stub(watson, 'getKeywords', () => ['k1', 'k2'])
-})
+let user, challenge, guide
 
-test.beforeEach(async (t) => {
-  const mongo = new mongoose.Mongoose()
-  await mockgoose(mongo)
-  await mongo.connect('')
-  const User = mongo.model('User', userSchema)
-  const Challenge = mongo.model('Challenge', challengeSchema)
-  const Tag = mongo.model('Tag', tagSchema)
-  const Guide = mongo.model('Guide', schema)
-  const user = await User.create({ email: 'a@a.com', password: '123456' })
-  const challenge = await Challenge.create({ user, title: 'test' })
+beforeEach(async () => {
+  user = await User.create({ email: 'a@a.com', password: '123456' })
+  challenge = await Challenge.create({ user, title: 'test' })
   getKeywords.reset()
-  const guide = await Guide.create({ user, challenge, title: 'test', description: 'test' })
-
-  t.context = { ...t.context, Guide, User, Challenge, Tag, guide, challenge, user }
+  guide = await Guide.create({ user, challenge, title: 'test', description: 'test' })
 })
 
-test.cb.after.always((t) => {
-  mockgoose.reset(t.end)
+describe('pre save', () => {
+  it('adds guide to challenge', async () => {
+    challenge = await Challenge.findById(guide.challenge.id)
+    expect(Array.isArray(challenge.guides)).toBe(true)
+    expect(challenge.guides.length).toBe(1)
+    expect(typeof challenge.guides[0]).toBe('object')
+    expect(challenge.guides[0].toString()).toBe(guide.id)
+  })
+
+  it('adds guide to guide', async () => {
+    const anotherGuide = await Guide.create({ user, title: 'test', guides: [guide] })
+    const updatedGuide = await Guide.findById(guide.id)
+    expect(typeof updatedGuide).toBe('object')
+    expect(Array.isArray(updatedGuide.guides)).toBe(true)
+    expect(updatedGuide.guides.length).toBe(1)
+    expect(updatedGuide.guides[0].toString()).toBe(anotherGuide.id)
+  })
+
+  it('calls getKeywords when tags are modified', () => {
+    expect(getKeywords.calledOnce).toBe(true)
+  })
+
+  it('does not call getKeywords when tags are not modified', async () => {
+    getKeywords.reset()
+    await guide.save()
+    expect(getKeywords.called).toBe(false)
+  })
 })
 
-test('view', (t) => {
-  const { guide, user, challenge } = t.context
-  const view = guide.view()
-  t.true(typeof view === 'object')
-  t.true(view.id === guide.id)
-  t.true(typeof view.user === 'object')
-  t.true(view.user.id === user.id)
-  t.true(typeof view.challenge === 'object')
-  t.true(view.challenge.id === challenge.id)
-  t.true(Array.isArray(view.tags))
-  t.true(view.tags.length === 2)
-  t.true(Array.isArray(view.guides))
-  t.true(view.title === guide.title)
-  t.true(view.description === guide.description)
-  t.truthy(view.createdAt)
-  t.truthy(view.updatedAt)
+describe('pre remove', () => {
+  it('removes guide from challenge', async () => {
+    await guide.remove()
+    const updatedChallenge = await Challenge.findById(challenge.id)
+    expect(typeof updatedChallenge).toBe('object')
+    expect(Array.isArray(updatedChallenge.guides)).toBe(true)
+    expect(updatedChallenge.guides.length).toBe(0)
+  })
+
+  it('removes guide from guide', async () => {
+    let anotherGuide = await Guide.create({ user, title: 'test', guides: [guide] })
+    await guide.remove()
+    anotherGuide = await Guide.findById(anotherGuide.id)
+    expect(typeof anotherGuide).toBe('object')
+    expect(Array.isArray(anotherGuide.guides)).toBe(true)
+    expect(anotherGuide.guides.length).toBe(0)
+  })
 })
 
-test('pre save - add guide to challenge', async (t) => {
-  const { guide, Challenge } = t.context
-  const challenge = await Challenge.findById(guide.challenge.id)
-  t.true(Array.isArray(challenge.guides))
-  t.true(challenge.guides.length === 1)
-  t.true(typeof challenge.guides[0] === 'object')
-  t.true(challenge.guides[0].toString() === guide.id)
+describe('view', () => {
+  it('returns view', () => {
+    const view = guide.view()
+    expect(typeof view).toBe('object')
+    expect(view.id).toBe(guide.id)
+    expect(typeof view.user).toBe('object')
+    expect(view.user.id).toBe(user.id)
+    expect(typeof view.challenge).toBe('object')
+    expect(view.challenge.id).toBe(challenge.id)
+    expect(Array.isArray(view.tags)).toBe(true)
+    expect(view.tags.length).toBe(2)
+    expect(Array.isArray(view.guides)).toBe(true)
+    expect(view.title).toBe(guide.title)
+    expect(view.description).toBe(guide.description)
+    expect(view.createdAt).toBeTruthy()
+    expect(view.updatedAt).toBeTruthy()
+  })
 })
 
-test('pre save - add guide to guide', async (t) => {
-  const { Guide, guide, user } = t.context
-  const anotherGuide = await Guide.create({ user, title: 'test', guides: [guide] })
-  const updatedGuide = await Guide.findById(guide.id)
-  t.true(typeof updatedGuide === 'object')
-  t.true(Array.isArray(updatedGuide.guides))
-  t.true(updatedGuide.guides.length === 1)
-  t.true(updatedGuide.guides[0].toString() === anotherGuide.id)
-})
-
-test('pre remove - remove guide from challenge', async (t) => {
-  const { Challenge, challenge, guide } = t.context
-  await guide.remove()
-  const updatedChallenge = await Challenge.findById(challenge.id)
-  t.true(typeof updatedChallenge === 'object')
-  t.true(Array.isArray(updatedChallenge.guides))
-  t.true(updatedChallenge.guides.length === 0)
-})
-
-test('pre remove - remove guide from guide', async (t) => {
-  const { Guide, guide, user } = t.context
-  let anotherGuide = await Guide.create({ user, title: 'test', guides: [guide] })
-  await guide.remove()
-  anotherGuide = await Guide.findById(anotherGuide.id)
-  t.true(typeof anotherGuide === 'object')
-  t.true(Array.isArray(anotherGuide.guides))
-  t.true(anotherGuide.guides.length === 0)
-})
-
-test.serial('call getKeywords', (t) => {
-  t.true(getKeywords.calledOnce)
-})
-
-test.serial('assignTags', async (t) => {
-  const { guide } = t.context
-  await guide.assignTags()
-  const { tags } = guide
-  t.true(Array.isArray(tags))
-  t.true(tags.length === 2)
+describe('assignTags', () => {
+  it('assigns tags', async () => {
+    getKeywords.reset()
+    guide.tags = []
+    await guide.assignTags()
+    expect(getKeywords.calledOnce).toBe(true)
+    expect(Array.isArray(guide.tags)).toBe(true)
+    expect(guide.tags.length).toBe(2)
+  })
 })

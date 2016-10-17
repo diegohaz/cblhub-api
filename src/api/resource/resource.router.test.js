@@ -1,55 +1,29 @@
-import test from 'ava'
 import { stub } from 'sinon'
-import Promise from 'bluebird'
 import request from 'supertest-as-promised'
-import mockgoose from 'mockgoose'
+import { signSync } from '../../services/jwt'
 import * as watson from '../../services/watson'
 import * as meta from '../../services/meta'
-import { signSync } from '../../services/jwt'
 import express from '../../config/express'
-import mongoose from '../../config/mongoose'
 import { User } from '../user'
 import { Challenge } from '../challenge'
 import routes, { Resource } from '.'
 
 const app = () => express(routes)
+stub(watson, 'getKeywords', () => ['k1', 'k2'])
+stub(meta, 'getMeta', () => Promise.resolve({ prop: 'value' }))
 
-test.before(async (t) => {
-  watson.getKeywords.restore || stub(watson, 'getKeywords', () => ['k1', 'k2'])
-  meta.getMeta.restore || stub(meta, 'getMeta', () => Promise.resolve({ prop: 'value' }))
-  await mockgoose(mongoose)
-  await mongoose.connect('')
+let user, anotherUser, userSession, anotherSession, challenge, resource
+
+beforeEach(async () => {
+  user = await User.create({ email: 'a@a.com', password: '123456' })
+  anotherUser = await User.create({ email: 'b@b.com', password: '123456' })
+  userSession = signSync(user.id)
+  anotherSession = signSync(anotherUser.id)
+  challenge = await Challenge.create({ user, title: 'test' })
+  resource = await Resource.create({ user, challenge, title: 'test' })
 })
 
-test.beforeEach(async (t) => {
-  const [ user, anotherUser, admin ] = await User.create([
-    { email: 'a@a.com', password: '123456' },
-    { email: 'b@b.com', password: '123456' },
-    { email: 'c@c.com', password: '123456', role: 'admin' }
-  ])
-  const [ userSession, anotherSession, adminSession ] = [
-    signSync(user.id), signSync(anotherUser.id), signSync(admin.id)
-  ]
-  const challenge = await Challenge.create({ user, title: 'test' })
-  const resource = await Resource.create({ user, challenge, title: 'test' })
-  t.context = {
-    ...t.context,
-    anotherUser,
-    userSession,
-    anotherSession,
-    adminSession,
-    resource,
-    user,
-    challenge
-  }
-})
-
-test.afterEach.always(async (t) => {
-  await Promise.all([User.remove(), Resource.remove(), Challenge.remove()])
-})
-
-test.serial('POST /resources 201 (user)', async (t) => {
-  const { userSession } = t.context
+test('POST /resources 201 (user)', async () => {
   const { status, body } = await request(app())
     .post('/')
     .send({
@@ -60,253 +34,233 @@ test.serial('POST /resources 201 (user)', async (t) => {
       mediaType: 'website',
       image: 'test.jpg'
     })
-  t.true(status === 201)
-  t.true(typeof body === 'object')
-  t.true(body.title === 'test')
-  t.true(body.description === 'test')
-  t.true(body.url === 'test.com')
-  t.true(body.mediaType === 'website')
-  t.true(body.image === 'test.jpg')
+  expect(status).toBe(201)
+  expect(typeof body).toBe('object')
+  expect(body.title).toBe('test')
+  expect(body.description).toBe('test')
+  expect(body.url).toBe('test.com')
+  expect(body.mediaType).toBe('website')
+  expect(body.image).toBe('test.jpg')
 })
 
-test.serial('POST /resources 401', async (t) => {
+test('POST /resources 401', async () => {
   const { status } = await request(app())
     .post('/')
-  t.true(status === 401)
+  expect(status).toBe(401)
 })
 
-test.serial('GET /resources/meta 200', async (t) => {
+test('GET /resources/meta 200', async () => {
   const { status, body } = await request(app())
     .get('/meta')
     .query({ url: 'test.com' })
-  t.true(status === 200)
-  t.true(body.prop === 'value')
+  expect(status).toBe(200)
+  expect(body.prop).toBe('value')
 })
 
-test.serial('GET /resources/meta 400 - missing url', async (t) => {
+test('GET /resources/meta 400 - missing url', async () => {
   const { status } = await request(app())
     .get('/meta')
-  t.true(status === 400)
+  expect(status).toBe(400)
 })
 
-test.serial('GET /resources 200', async (t) => {
-  const { status, body } = await request(app())
-    .get('/')
-  t.true(status === 200)
-  t.true(Array.isArray(body))
-})
-
-test.serial('GET /resources 200 - inexistent users', async (t) => {
-  const { anotherUser } = t.context
+test('GET /resources 200 - inexistent users', async () => {
   const { status, body } = await request(app())
     .get('/')
     .query({ users: anotherUser.id })
-  t.true(status === 200)
-  t.true(Array.isArray(body))
-  t.true(body.length === 0)
+  expect(status).toBe(200)
+  expect(Array.isArray(body)).toBe(true)
+  expect(body.length).toBe(0)
 })
 
-test.serial('GET /resources 200 - users', async (t) => {
-  const { user } = t.context
+test('GET /resources 200 - users', async () => {
   const { status, body } = await request(app())
     .get('/')
     .query({ users: user.id })
-  t.true(status === 200)
-  t.true(Array.isArray(body))
-  t.true(body.length === 1)
+  expect(status).toBe(200)
+  expect(Array.isArray(body)).toBe(true)
+  expect(body.length).toBe(1)
 })
 
-test.serial('GET /resources 200 - inexistent challenges', async (t) => {
+test('GET /resources 200 - inexistent challenges', async () => {
   const { status, body } = await request(app())
     .get('/')
     .query({ challenges: '123456789098765432123456' })
-  t.true(status === 200)
-  t.true(Array.isArray(body))
-  t.true(body.length === 0)
+  expect(status).toBe(200)
+  expect(Array.isArray(body)).toBe(true)
+  expect(body.length).toBe(0)
 })
 
-test.serial('GET /resources 200 - challenges', async (t) => {
-  const { challenge } = t.context
+test('GET /resources 200 - challenges', async () => {
   const { status, body } = await request(app())
     .get('/')
     .query({ challenges: challenge.id })
-  t.true(status === 200)
-  t.true(Array.isArray(body))
-  t.true(body.length === 1)
+  expect(status).toBe(200)
+  expect(Array.isArray(body)).toBe(true)
+  expect(body.length).toBe(1)
 })
 
-test.serial('GET /resources 200 - inexistent guides', async (t) => {
+test('GET /resources 200 - inexistent guides', async () => {
   const { status, body } = await request(app())
     .get('/')
     .query({ guides: '123456789098765432123456' })
-  t.true(status === 200)
-  t.true(Array.isArray(body))
-  t.true(body.length === 0)
+  expect(status).toBe(200)
+  expect(Array.isArray(body)).toBe(true)
+  expect(body.length).toBe(0)
 })
 
-test.serial('GET /resources 200 - guides', async (t) => {
-  const { user, resource } = t.context
+test('GET /resources 200 - guides', async () => {
   const anotherResource = await Resource.create({ user, title: 'test' })
   await resource.update({ $addToSet: { guides: anotherResource } })
   const { status, body } = await request(app())
     .get('/')
     .query({ guides: anotherResource.id })
-  t.true(status === 200)
-  t.true(Array.isArray(body))
-  t.true(body.length === 1)
+  expect(status).toBe(200)
+  expect(Array.isArray(body)).toBe(true)
+  expect(body.length).toBe(1)
 })
 
-test.serial('GET /resources/:id 200', async (t) => {
-  const { resource } = t.context
+test('POST /resources 401', async () => {
+  const { status } = await request(app())
+    .post('/')
+  expect(status).toBe(401)
+})
+
+test('GET /resources 200', async () => {
+  const { status, body } = await request(app())
+    .get('/')
+  expect(status).toBe(200)
+  expect(Array.isArray(body)).toBe(true)
+})
+
+test('GET /resources/:id 200', async () => {
   const { status, body } = await request(app())
     .get(`/${resource.id}`)
-  t.true(status === 200)
-  t.true(typeof body === 'object')
-  t.true(body.id === resource.id)
+  expect(status).toBe(200)
+  expect(typeof body).toBe('object')
+  expect(body.id).toBe(resource.id)
 })
 
-test.serial('GET /resources/:id 404', async (t) => {
+test('GET /resources/:id 404', async () => {
   const { status } = await request(app())
     .get('/123456789098765432123456')
-  t.true(status === 404)
+  expect(status).toBe(404)
 })
 
-test.serial('PUT /resources/:id 200 (user)', async (t) => {
-  const { userSession, resource } = t.context
+test('PUT /resources/:id 200 (user)', async () => {
   const { status, body } = await request(app())
     .put(`/${resource.id}`)
-    .send({
-      access_token: userSession,
-      title: 'test',
-      description: 'test',
-      url: 'test.com',
-      mediaType: 'website',
-      image: 'test.jpg'
-    })
-  t.true(status === 200)
-  t.true(typeof body === 'object')
-  t.true(body.id === resource.id)
-  t.true(body.title === 'test')
-  t.true(body.description === 'test')
-  t.true(body.url === 'test.com')
-  t.true(body.mediaType === 'website')
-  t.true(body.image === 'test.jpg')
+    .send({ access_token: userSession, title: 'test2', description: 'test2' })
+  expect(status).toBe(200)
+  expect(typeof body).toBe('object')
+  expect(body.id).toBe(resource.id)
+  expect(body.title).toBe('test2')
+  expect(body.description).toBe('test2')
+  expect(typeof body.user).toBe('object')
 })
 
-test.serial('PUT /resources/:id 200 (user) - add guide', async (t) => {
-  const { userSession, user, resource } = t.context
+test('PUT /resources/:id 200 (user) - add guide', async () => {
   const anotherResource = await Resource.create({ user, title: 'test' })
   const { status, body } = await request(app())
     .put(`/${resource.id}`)
     .send({ access_token: userSession, guides: anotherResource.id })
-  t.true(status === 200)
-  t.true(typeof body === 'object')
-  t.true(body.id === resource.id)
-  t.true(Array.isArray(body.guides))
-  t.true(body.guides.length === 1)
-  t.true(typeof body.guides[0] === 'object')
-  t.true(body.guides[0].id === anotherResource.id.toString())
+  expect(status).toBe(200)
+  expect(typeof body).toBe('object')
+  expect(body.id).toBe(resource.id)
+  expect(Array.isArray(body.guides)).toBe(true)
+  expect(body.guides.length).toBe(1)
+  expect(typeof body.guides[0]).toBe('object')
+  expect(body.guides[0].id).toBe(anotherResource.id.toString())
 })
 
-test.serial('PUT /resources/:id 200 (user) - add guide with already 1 guide', async (t) => {
-  const { userSession, user, resource } = t.context
+test('PUT /resources/:id 200 (user) - add guide with already 1 guide', async () => {
   const anotherResource = await Resource.create({ user, title: 'test' })
   const anotherResource2 = await Resource.create({ user, title: 'test', guides: [anotherResource] })
   const { status, body } = await request(app())
     .put(`/${anotherResource2.id}`)
     .send({ access_token: userSession, guides: `+${resource.id}` })
-  t.true(status === 200)
-  t.true(typeof body === 'object')
-  t.true(body.id === anotherResource2.id)
-  t.true(Array.isArray(body.guides))
-  t.true(body.guides.length === 2)
-  t.true(typeof body.guides[1] === 'object')
-  t.true(body.guides[1].id === resource.id.toString())
+  expect(status).toBe(200)
+  expect(typeof body).toBe('object')
+  expect(body.id === anotherResource2.id).toBe(true)
+  expect(Array.isArray(body.guides)).toBe(true)
+  expect(body.guides.length === 2).toBe(true)
+  expect(typeof body.guides[1]).toBe('object')
+  expect(body.guides[1].id === resource.id.toString()).toBe(true)
 })
 
-test.serial('PUT /resources/:id 200 (user) - add 2 guides', async (t) => {
-  const { userSession, user, resource } = t.context
+test('PUT /resources/:id 200 (user) - add 2 guides', async () => {
   const anotherResource = await Resource.create({ user, title: 'test' })
   const anotherResource2 = await Resource.create({ user, title: 'test' })
   const { status, body } = await request(app())
     .put(`/${resource.id}`)
     .send({ access_token: userSession, guides: `${anotherResource.id},${anotherResource2.id}` })
-  t.true(status === 200)
-  t.true(typeof body === 'object')
-  t.true(body.id === resource.id)
-  t.true(Array.isArray(body.guides))
-  t.true(body.guides.length === 2)
-  t.true(typeof body.guides[0] === 'object')
-  t.true(body.guides[0].id === anotherResource.id.toString())
-  t.true(typeof body.guides[1] === 'object')
-  t.true(body.guides[1].id === anotherResource2.id.toString())
+  expect(status).toBe(200)
+  expect(typeof body).toBe('object')
+  expect(body.id).toBe(resource.id)
+  expect(Array.isArray(body.guides)).toBe(true)
+  expect(body.guides.length === 2).toBe(true)
+  expect(typeof body.guides[0]).toBe('object')
+  expect(body.guides[0].id).toBe(anotherResource.id.toString())
+  expect(typeof body.guides[1]).toBe('object')
+  expect(body.guides[1].id).toBe(anotherResource2.id.toString())
 })
 
-test.serial('PUT /resources/:id 200 (user) - remove guide', async (t) => {
-  const { userSession, user, resource } = t.context
+test('PUT /resources/:id 200 (user) - remove guide', async () => {
   const anotherResource = await Resource.create({ user, title: 'test', guides: [resource] })
-  t.true(Array.isArray(anotherResource.view().guides))
-  t.true(anotherResource.view().guides.length === 1)
+  expect(Array.isArray(anotherResource.view().guides)).toBe(true)
+  expect(anotherResource.view().guides.length).toBe(1)
   const { status, body } = await request(app())
     .put(`/${anotherResource.id}`)
     .send({ access_token: userSession, guides: `-${resource.id}` })
-  t.true(status === 200)
-  t.true(typeof body === 'object')
-  t.true(body.id === anotherResource.id)
-  t.true(Array.isArray(body.guides))
-  t.true(body.guides.length === 0)
+  expect(status).toBe(200)
+  expect(typeof body).toBe('object')
+  expect(body.id === anotherResource.id).toBe(true)
+  expect(Array.isArray(body.guides)).toBe(true)
+  expect(body.guides.length === 0).toBe(true)
 })
 
-test.serial('PUT /resources/:id 401 (user) - another user', async (t) => {
-  const { anotherSession, resource } = t.context
+test('PUT /resources/:id 401 (user) - another user', async () => {
   const { status } = await request(app())
     .put(`/${resource.id}`)
-    .send({ access_token: anotherSession, title: 'test', description: 'test' })
-  t.true(status === 401)
+    .send({ access_token: anotherSession, title: 'test2', description: 'test2' })
+  expect(status).toBe(401)
 })
 
-test.serial('PUT /resources/:id 401', async (t) => {
-  const { resource } = t.context
+test('PUT /resources/:id 401', async () => {
   const { status } = await request(app())
     .put(`/${resource.id}`)
-  t.true(status === 401)
+  expect(status).toBe(401)
 })
 
-test.serial('PUT /resources/:id 404 (user)', async (t) => {
-  const { anotherSession } = t.context
+test('PUT /resources/:id 404 (user)', async () => {
   const { status } = await request(app())
     .put('/123456789098765432123456')
-    .send({ access_token: anotherSession, title: 'test', description: 'test' })
-  t.true(status === 404)
+    .send({ access_token: anotherSession, title: 'test2', description: 'test2' })
+  expect(status).toBe(404)
 })
 
-test.serial('DELETE /resources/:id 204 (user)', async (t) => {
-  const { userSession, resource } = t.context
+test('DELETE /resources/:id 204 (user)', async () => {
   const { status } = await request(app())
     .delete(`/${resource.id}`)
     .query({ access_token: userSession })
-  t.true(status === 204)
+  expect(status).toBe(204)
 })
 
-test.serial('DELETE /resources/:id 401 (user) - another user', async (t) => {
-  const { anotherSession, resource } = t.context
+test('DELETE /resources/:id 401 (user) - another user', async () => {
   const { status } = await request(app())
     .delete(`/${resource.id}`)
     .send({ access_token: anotherSession })
-  t.true(status === 401)
+  expect(status).toBe(401)
 })
 
-test.serial('DELETE /resources/:id 401', async (t) => {
-  const { resource } = t.context
+test('DELETE /resources/:id 401', async () => {
   const { status } = await request(app())
     .delete(`/${resource.id}`)
-  t.true(status === 401)
+  expect(status).toBe(401)
 })
 
-test.serial('DELETE /resources/:id 404 (user)', async (t) => {
-  const { anotherSession } = t.context
+test('DELETE /resources/:id 404 (user)', async () => {
   const { status } = await request(app())
     .delete('/123456789098765432123456')
     .query({ access_token: anotherSession })
-  t.true(status === 404)
+  expect(status).toBe(404)
 })

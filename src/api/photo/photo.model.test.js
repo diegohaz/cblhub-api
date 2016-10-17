@@ -1,122 +1,74 @@
-import test from 'ava'
-import mockgoose from 'mockgoose'
-import mongoose from '../../config/mongoose'
-import { schema } from '.'
+import { stub } from 'sinon'
+import * as watson from '../../services/watson'
+import { Photo } from '.'
+import { Challenge } from '../challenge'
 
-test.beforeEach(async (t) => {
-  const mongo = new mongoose.Mongoose()
-  await mockgoose(mongo)
-  await mongo.connect('')
-  const Photo = mongo.model('Photo', schema)
-  const photo = await Photo.create({ title: 'test' })
+stub(Photo.prototype, 'pickColor', () => '#000000')
+stub(watson, 'getKeywords', () => ['k1', 'k2'])
 
-  t.context = { ...t.context, Photo, photo }
+let photo
+
+beforeEach(async () => {
+  photo = await Photo.create({ title: 'test' })
 })
 
-test.cb.after.always((t) => {
-  mockgoose.reset(t.end)
+describe('pre remove', () => {
+  it('removes photo reference from challenge', async () => {
+    await Challenge.create({ photo, title: 'test' })
+    expect((await Challenge.find({ photo })).length).toBe(1)
+    await photo.remove()
+    expect((await Challenge.find({ photo })).length).toBe(0)
+  })
 })
 
-test('view', (t) => {
-  const { photo } = t.context
-  photo.thumbnail = { src: 'test.jpg' }
-  const view = photo.view()
-  t.true(typeof view === 'object')
-  t.true(view.id === photo.id)
-  t.true(view.title === photo.title)
-  t.true(view.thumbnail.src === photo.thumbnail.src)
-  t.truthy(view.createdAt)
-  t.truthy(view.updatedAt)
+describe('view', () => {
+  it('returns a view', () => {
+    photo.thumbnail = { src: 'test.jpg' }
+    const view = photo.view()
+    expect(typeof view).toBe('object')
+    expect(view.id).toBe(photo.id)
+    expect(view.title).toBe(photo.title)
+    expect(view.thumbnail.src).toBe(photo.thumbnail.src)
+    expect(view.createdAt).toBeTruthy()
+    expect(view.updatedAt).toBeTruthy()
+  })
 })
 
-test('combine photos with same id', async (t) => {
-  const { Photo, photo } = t.context
-  const anotherPhoto = await Photo.createUnique({ _id: photo.id, title: 'test2' })
-  t.true(anotherPhoto.id === photo.id)
-  t.true(anotherPhoto.title === photo.title)
-  t.true(anotherPhoto.createdAt.getTime() === photo.createdAt.getTime())
-})
-
-test('translate from flickr', async (t) => {
-  const { Photo } = t.context
-  const flickrPhoto = {
-    id: '9551387978',
-    title: 'moon',
-    owner: '123',
-    ownername: 'fsse8info',
-    url_t: 'https://farm8.staticflickr.com/7454/9551387978_c3439d9e38_t.jpg',
-    height_t: '100',
-    width_t: '80',
-    url_s: 'https://farm8.staticflickr.com/7454/9551387978_c3439d9e38_m.jpg',
-    height_s: '165',
-    width_s: '240',
-    url_m: 'https://farm8.staticflickr.com/7454/9551387978_c3439d9e38.jpg',
-    height_m: '345',
-    width_m: '500',
-    url_l: 'https://farm8.staticflickr.com/7454/9551387978_c3439d9e38_b.jpg',
-    height_l: '706',
-    width_l: '1024'
+describe('createFromService', () => {
+  const servicePhoto = {
+    id: '955138',
+    owner: 'foo',
+    url: 'http://example.com',
+    title: 'bar',
+    thumbnail: {
+      src: 'http://example.com/123_t',
+      width: '100',
+      height: '100'
+    },
+    small: {
+      src: 'http://example.com/123_s',
+      width: '200',
+      height: '200'
+    },
+    medium: {
+      src: 'http://example.com/123_m',
+      width: '300',
+      height: '300'
+    },
+    large: {
+      src: 'http://example.com/123_l',
+      width: '400',
+      height: '400'
+    }
   }
 
-  const photo = Photo.translateFromFlickr(flickrPhoto)
-  t.true(typeof photo === 'object')
-  t.true(photo.id === '9551387978')
-  t.true(photo.title === 'moon')
-  t.true(photo.owner === 'fsse8info')
-  t.true(/^https?:\/\/(www\.)?flickr\.com\/photos\/123\/9551387978\/?$/.test(photo.url))
-  t.true(typeof photo.thumbnail === 'object')
-  t.true(typeof photo.small === 'object')
-  t.true(typeof photo.medium === 'object')
-  t.true(typeof photo.large === 'object')
-  t.true(photo.thumbnail.src === 'https://farm8.staticflickr.com/7454/9551387978_c3439d9e38_t.jpg')
-  t.true(photo.thumbnail.width === 80)
-  t.true(photo.thumbnail.height === 100)
-  t.true(photo.small.src === 'https://farm8.staticflickr.com/7454/9551387978_c3439d9e38_m.jpg')
-  t.true(photo.small.width === 240)
-  t.true(photo.small.height === 165)
-  t.true(photo.medium.src === 'https://farm8.staticflickr.com/7454/9551387978_c3439d9e38.jpg')
-  t.true(photo.medium.width === 500)
-  t.true(photo.medium.height === 345)
-  t.true(photo.large.src === 'https://farm8.staticflickr.com/7454/9551387978_c3439d9e38_b.jpg')
-  t.true(photo.large.width === 1024)
-  t.true(photo.large.height === 706)
-})
+  it('updates the existent photo', async () => {
+    await Photo.createFromService({ ...servicePhoto, id: photo.id })
+    expect((await Photo.find({})).length).toBe(1)
+  })
 
-test('translate from flickr without medium and large images', async (t) => {
-  const { Photo } = t.context
-  const flickrPhoto = {
-    id: '9551387978',
-    title: 'moon',
-    owner: '123',
-    ownername: 'fsse8info',
-    url_t: 'https://farm8.staticflickr.com/7454/9551387978_c3439d9e38_t.jpg',
-    height_t: '100',
-    width_t: '80',
-    url_s: 'https://farm8.staticflickr.com/7454/9551387978_c3439d9e38_m.jpg',
-    height_s: '165',
-    width_s: '240'
-  }
-
-  const photo = Photo.translateFromFlickr(flickrPhoto)
-  t.true(typeof photo === 'object')
-  t.true(photo.id === '9551387978')
-  t.true(photo.title === 'moon')
-  t.true(photo.owner === 'fsse8info')
-  t.true(/^https?:\/\/(www\.)?flickr\.com\/photos\/123\/9551387978\/?$/.test(photo.url))
-  t.true(typeof photo.thumbnail === 'object')
-  t.true(typeof photo.small === 'object')
-  t.true(typeof photo.medium === 'object')
-  t.true(typeof photo.large === 'object')
-  t.true(photo.thumbnail.src === 'https://farm8.staticflickr.com/7454/9551387978_c3439d9e38_t.jpg')
-  t.true(photo.thumbnail.width === 80)
-  t.true(photo.thumbnail.height === 100)
-  t.true(photo.small.src === 'https://farm8.staticflickr.com/7454/9551387978_c3439d9e38_m.jpg')
-  t.true(photo.small.width === 240)
-  t.true(photo.small.height === 165)
-  t.true(photo.medium.src === 'https://farm8.staticflickr.com/7454/9551387978_c3439d9e38_m.jpg')
-  t.true(photo.medium.width === 240)
-  t.true(photo.medium.height === 165)
-  t.true(photo.large.src === 'https://farm8.staticflickr.com/7454/9551387978_c3439d9e38_m.jpg')
-  t.true(photo.large.width === 240)
-  t.true(photo.large.height === 165)
+  it('creates a new photo', async () => {
+    await Photo.createFromService(servicePhoto)
+    expect((await Photo.find({})).length).toBe(2)
+  })
 })

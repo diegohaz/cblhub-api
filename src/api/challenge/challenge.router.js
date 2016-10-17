@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
-import { session } from '../../services/passport'
+import { token } from '../../services/passport'
 import { create, index, show, update, destroy } from './challenge.controller'
 import { schema } from './challenge.model'
 export Challenge, { schema } from './challenge.model'
@@ -15,6 +15,7 @@ const { photo, title, bigIdea, essentialQuestion, description, users } = schema.
  * @apiGroup Challenge
  * @apiPermission user
  * @apiParam {String} access_token user access token.
+ * @apiParam photo Challenge's photo.
  * @apiParam title Challenge's title.
  * @apiParam bigIdea Challenge's bigIdea.
  * @apiParam essentialQuestion Challenge's essentialQuestion.
@@ -25,7 +26,7 @@ const { photo, title, bigIdea, essentialQuestion, description, users } = schema.
  * @apiError 401 user access only.
  */
 router.post('/',
-  session({ required: true }),
+  token({ required: true }),
   body({ photo, title, bigIdea, essentialQuestion, description }),
   create)
 
@@ -58,6 +59,7 @@ router.get('/:id',
  * @apiGroup Challenge
  * @apiPermission user
  * @apiParam {String} access_token user access token.
+ * @apiParam photo Challenge's photo.
  * @apiParam title Challenge's title.
  * @apiParam bigIdea Challenge's bigIdea.
  * @apiParam essentialQuestion Challenge's essentialQuestion.
@@ -68,7 +70,7 @@ router.get('/:id',
  * @apiError 401 user access only.
  */
 router.put('/:id',
-  session({ required: true }),
+  token({ required: true }),
   body({ title: { ...title, required: false }, photo, bigIdea, essentialQuestion, description }),
   update)
 
@@ -83,7 +85,7 @@ router.put('/:id',
  * @apiError 401 user access only.
  */
 router.delete('/:id',
-  session({ required: true }),
+  token({ required: true }),
   destroy)
 
 export default router

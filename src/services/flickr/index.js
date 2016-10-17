@@ -3,7 +3,7 @@ import { flickrKey } from '../../config'
 
 export const getPhotos = (text, { limit = 20, page = 1 } = {}) =>
   request({
-    uri: 'https://api.flickr.com/services/rest/',
+    uri: 'https://api.flickr.com/services/rest',
     json: true,
     qs: {
       method: 'flickr.photos.search',
@@ -21,5 +21,33 @@ export const getPhotos = (text, { limit = 20, page = 1 } = {}) =>
     }
   }).then((res) => {
     if (res.stat !== 'ok') throw new Error(res.stat)
-    return res.photos.photo.filter((photo) => photo.url_l)
+    const flickrPhotos = res.photos.photo.filter((photo) => photo.url_l)
+    const sizes = ['thumbnail', 'small', 'medium', 'large']
+
+    const photos = flickrPhotos.map((flickrPhoto) => {
+      const photo = {
+        id: flickrPhoto.id,
+        owner: flickrPhoto.ownername,
+        url: `https://www.flickr.com/photos/${flickrPhoto.owner}/${flickrPhoto.id}`,
+        title: flickrPhoto.title
+      }
+
+      sizes.forEach((size, i) => {
+        let letter = size.charAt(0)
+        const sizeExists = !!flickrPhoto[`url_${letter}`]
+        if (!sizeExists && i > 0) {
+          photo[size] = photo[sizes[i - 1]]
+        } else {
+          photo[size] = {
+            src: flickrPhoto[`url_${letter}`],
+            width: flickrPhoto[`width_${letter}`],
+            height: flickrPhoto[`height_${letter}`]
+          }
+        }
+      })
+
+      return photo
+    })
+
+    return photos
   })

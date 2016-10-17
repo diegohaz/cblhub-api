@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
-import { session } from '../../services/passport'
+import { token } from '../../services/passport'
 import { create, meta, index, show, update, destroy } from './resource.controller'
 import { schema } from './resource.model'
 export Resource, { schema } from './resource.model'
@@ -29,7 +29,7 @@ const { challenge, tags, title, description, guides, url, mediaType, image } = s
  * @apiError 401 user access only.
  */
 router.post('/',
-  session({ required: true }),
+  token({ required: true }),
   body({ challenge, tags, title, description, guides, url, mediaType, image }),
   create)
 
@@ -95,7 +95,7 @@ router.get('/:id',
  * @apiError 401 user access only.
  */
 router.put('/:id',
-  session({ required: true }),
+  token({ required: true }),
   body({
     title: { ...title, required: false },
     challenge,
@@ -119,7 +119,7 @@ router.put('/:id',
  * @apiError 401 user access only.
  */
 router.delete('/:id',
-  session({ required: true }),
+  token({ required: true }),
   destroy)
 
 export default router

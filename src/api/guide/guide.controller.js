@@ -8,13 +8,12 @@ export const create = ({ user, bodymen: { body } }, res, next) =>
     .then(success(res, 201))
     .catch(next)
 
-export const index = ({ querymen: { query, select, cursor } }, res, next) => {
+export const index = ({ querymen: { query, select, cursor } }, res, next) =>
   Guide.find(query, select, cursor)
     .populate('user challenge tags guides')
     .then((guides) => guides.map((guide) => guide.view()))
     .then(success(res))
     .catch(next)
-}
 
 export const show = ({ params }, res, next) =>
   Guide.findById(params.id)

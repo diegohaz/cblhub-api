@@ -9,20 +9,16 @@ beforeEach(async () => {
 describe('view', () => {
   it('returns simple view', () => {
     const view = tag.view()
-    expect(typeof view).toEqual('object')
-    expect(view.id).toEqual(tag.id)
-    expect(view.name).toEqual(tag.name)
-    expect(view.createdAt).toBeTruthy()
-    expect(view.updatedAt).toBeTruthy()
+    expect(typeof view).toBe('object')
+    expect(view.id).toBe(tag.id)
+    expect(view.name).toBe(tag.name)
   })
 
   it('returns full view', () => {
     const view = tag.view(true)
-    expect(typeof view).toEqual('object')
-    expect(view.id).toEqual(tag.id)
-    expect(view.name).toEqual(tag.name)
-    expect(view.createdAt).toBeTruthy()
-    expect(view.updatedAt).toBeTruthy()
+    expect(typeof view).toBe('object')
+    expect(view.id).toBe(tag.id)
+    expect(view.name).toBe(tag.name)
   })
 })
 

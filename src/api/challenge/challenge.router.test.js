@@ -1,42 +1,25 @@
-import test from 'ava'
 import { stub } from 'sinon'
-import Promise from 'bluebird'
 import request from 'supertest-as-promised'
-import mockgoose from 'mockgoose'
 import { signSync } from '../../services/jwt'
 import * as watson from '../../services/watson'
 import express from '../../config/express'
-import mongoose from '../../config/mongoose'
 import { User } from '../user'
-import routes, { Challenge } from './'
+import routes, { Challenge } from '.'
 
 const app = () => express(routes)
+stub(watson, 'getKeywords', () => ['k1', 'k2'])
 
-test.before(async (t) => {
-  watson.getKeywords.restore || stub(watson, 'getKeywords', () => ['k1', 'k2'])
-  await mockgoose(mongoose)
-  await mongoose.connect('')
+let userSession, anotherSession, challenge
+
+beforeEach(async () => {
+  const user = await User.create({ email: 'a@a.com', password: '123456' })
+  const anotherUser = await User.create({ email: 'b@b.com', password: '123456' })
+  userSession = signSync(user.id)
+  anotherSession = signSync(anotherUser.id)
+  challenge = await Challenge.create({ user, title: 'test' })
 })
 
-test.beforeEach(async (t) => {
-  const [ user, anotherUser, admin ] = await User.create([
-    { email: 'a@a.com', password: '123456' },
-    { email: 'b@b.com', password: '123456' },
-    { email: 'c@c.com', password: '123456', role: 'admin' }
-  ])
-  const [ userSession, anotherSession, adminSession ] = [
-    signSync(user.id), signSync(anotherUser.id), signSync(admin.id)
-  ]
-  const challenge = await Challenge.create({ user, title: 'test' })
-  t.context = { ...t.context, userSession, anotherSession, adminSession, user, challenge }
-})
-
-test.afterEach.always(async (t) => {
-  await Promise.all([User.remove(), Challenge.remove()])
-})
-
-test.serial('POST /challenges 201 (user)', async (t) => {
-  const { userSession } = t.context
+test('POST /challenges 201 (user)', async () => {
   const { status, body } = await request(app())
     .post('/')
     .send({
@@ -46,131 +29,115 @@ test.serial('POST /challenges 201 (user)', async (t) => {
       essentialQuestion: 'test',
       description: 'test'
     })
-  t.true(status === 201)
-  t.true(typeof body === 'object')
-  t.true(body.title === 'test')
-  t.true(body.bigIdea === 'test')
-  t.true(body.essentialQuestion === 'test')
-  t.true(body.description === 'test')
+  expect(status).toBe(201)
+  expect(typeof body).toBe('object')
+  expect(body.title).toBe('test')
+  expect(body.bigIdea).toBe('test')
+  expect(body.essentialQuestion).toBe('test')
+  expect(body.description).toBe('test')
+  expect(typeof body.user).toBe('object')
 })
 
-test.serial('POST /challenges 401', async (t) => {
+test('POST /challenges 401', async () => {
   const { status } = await request(app())
     .post('/')
-  t.true(status === 401)
+  expect(status).toBe(401)
 })
 
-test.serial('GET /challenges 200', async (t) => {
+test('GET /challenges 200', async () => {
   const { status, body } = await request(app())
     .get('/')
-  t.true(status === 200)
-  t.true(Array.isArray(body))
+  expect(status).toBe(200)
+  expect(Array.isArray(body)).toBe(true)
 })
 
-test.serial('GET /challenges 200 - inexistent users', async (t) => {
+test('GET /challenges 200 - inexistent users', async () => {
   const { status, body } = await request(app())
     .get('/')
     .query({ users: '123456789098765432123456' })
-  t.true(status === 200)
-  t.true(Array.isArray(body))
-  t.true(body.length === 0)
+  expect(status).toBe(200)
+  expect(Array.isArray(body)).toBe(true)
+  expect(body.length).toBe(0)
 })
 
-test.serial('GET /challenges 200 - users', async (t) => {
-  const { user } = t.context
+test('GET /challenges 200 - users', async () => {
   const { status, body } = await request(app())
     .get('/')
-    .query({ users: user.id })
-  t.true(status === 200)
-  t.true(Array.isArray(body))
-  t.true(body.length === 1)
+    .query({ users: challenge.user.id })
+  expect(status).toBe(200)
+  expect(Array.isArray(body)).toBe(true)
+  expect(body.length).toBe(1)
 })
 
-test.serial('GET /challenges/:id 200', async (t) => {
-  const { challenge } = t.context
+test('GET /challenges/:id 200', async () => {
   const { status, body } = await request(app())
     .get(`/${challenge.id}`)
-  t.true(status === 200)
-  t.true(typeof body === 'object')
-  t.true(body.id === challenge.id)
+  expect(status).toBe(200)
+  expect(typeof body).toBe('object')
+  expect(body.id).toBe(challenge.id)
 })
 
-test.serial('GET /challenges/:id 404', async (t) => {
+test('GET /challenges/:id 404', async () => {
   const { status } = await request(app())
     .get('/123456789098765432123456')
-  t.true(status === 404)
+  expect(status).toBe(404)
 })
 
-test.serial('PUT /challenges/:id 200 (user)', async (t) => {
-  const { userSession, challenge } = t.context
+test('PUT /challenges/:id 200 (user)', async () => {
   const { status, body } = await request(app())
     .put(`/${challenge.id}`)
-    .send({
-      access_token: userSession,
-      title: 'test',
-      bigIdea: 'test',
-      essentialQuestion: 'test',
-      description: 'test'
-    })
-  t.true(status === 200)
-  t.true(typeof body === 'object')
-  t.true(body.id === challenge.id)
-  t.true(body.title === 'test')
-  t.true(body.bigIdea === 'test')
-  t.true(body.essentialQuestion === 'test')
-  t.true(body.description === 'test')
+    .send({ access_token: userSession, title: 'test2', description: 'test2' })
+  expect(status).toBe(200)
+  expect(typeof body).toBe('object')
+  expect(body.id).toBe(challenge.id)
+  expect(body.title).toBe('test2')
+  expect(body.description).toBe('test2')
+  expect(typeof body.user).toBe('object')
 })
 
-test.serial('PUT /challenges/:id 401 (user) - another user', async (t) => {
-  const { anotherSession, challenge } = t.context
+test('PUT /challenges/:id 401 (user) - another user', async () => {
   const { status } = await request(app())
     .put(`/${challenge.id}`)
-    .send({ access_token: anotherSession, title: 'test' })
-  t.true(status === 401)
+    .send({ access_token: anotherSession, photo: 'test', title: 'test', bigIdea: 'test', essentialQuestion: 'test', description: 'test' })
+  expect(status).toBe(401)
 })
 
-test.serial('PUT /challenges/:id 401', async (t) => {
-  const { challenge } = t.context
+test('PUT /challenges/:id 401', async () => {
   const { status } = await request(app())
     .put(`/${challenge.id}`)
-  t.true(status === 401)
+  expect(status).toBe(401)
 })
 
-test.serial('PUT /challenges/:id 404 (user)', async (t) => {
-  const { anotherSession } = t.context
+test('PUT /challenges/:id 404 (user)', async () => {
   const { status } = await request(app())
     .put('/123456789098765432123456')
-    .send({ access_token: anotherSession, title: 'test' })
-  t.true(status === 404)
+    .send({ access_token: anotherSession, photo: 'test', title: 'test', bigIdea: 'test', essentialQuestion: 'test', description: 'test' })
+  expect(status).toBe(404)
 })
 
-test.serial('DELETE /challenges/:id 204 (user)', async (t) => {
-  const { userSession, challenge } = t.context
+test('DELETE /challenges/:id 204 (user)', async () => {
   const { status } = await request(app())
     .delete(`/${challenge.id}`)
     .query({ access_token: userSession })
-  t.true(status === 204)
+  expect(status).toBe(204)
 })
 
-test.serial('DELETE /challenges/:id 401 (user) - another user', async (t) => {
-  const { anotherSession, challenge } = t.context
+test('DELETE /challenges/:id 401 (user) - another user', async () => {
   const { status } = await request(app())
     .delete(`/${challenge.id}`)
     .send({ access_token: anotherSession })
-  t.true(status === 401)
+  expect(status).toBe(401)
 })
 
-test.serial('DELETE /challenges/:id 401', async (t) => {
-  const { challenge } = t.context
+test('DELETE /challenges/:id 401', async () => {
   const { status } = await request(app())
     .delete(`/${challenge.id}`)
-  t.true(status === 401)
+  expect(status).toBe(401)
 })
 
-test.serial('DELETE /challenges/:id 404 (user)', async (t) => {
-  const { anotherSession } = t.context
+test('DELETE /challenges/:id 404 (user)', async () => {
   const { status } = await request(app())
     .delete('/123456789098765432123456')
     .query({ access_token: anotherSession })
-  t.true(status === 404)
+  expect(status).toBe(404)
 })

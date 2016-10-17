@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import { success, notFound, authorOrAdmin } from '../../services/response/'
-import { Challenge } from './'
+import { Challenge } from '.'
 
 export const create = ({ user, bodymen: { body } }, res, next) =>
   Challenge.create({ ...body, user })
@@ -10,12 +10,14 @@ export const create = ({ user, bodymen: { body } }, res, next) =>
 
 export const index = ({ querymen: { query, select, cursor } }, res, next) =>
   Challenge.find(query, select, cursor)
+    .populate('user')
     .then((challenges) => challenges.map((challenge) => challenge.view()))
     .then(success(res))
     .catch(next)
 
 export const show = ({ params }, res, next) =>
   Challenge.findById(params.id)
+    .populate('user')
     .then(notFound(res))
     .then((challenge) => challenge ? challenge.view() : null)
     .then(success(res))
@@ -23,6 +25,7 @@ export const show = ({ params }, res, next) =>
 
 export const update = ({ user, bodymen: { body }, params }, res, next) =>
   Challenge.findById(params.id)
+    .populate('user')
     .then(notFound(res))
     .then(authorOrAdmin(res, user, 'user'))
     .then((challenge) => challenge ? _.merge(challenge, body).save() : null)

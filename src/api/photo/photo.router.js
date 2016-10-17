@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
-import { session } from '../../services/passport'
+import { token } from '../../services/passport'
 import { index, show, update, destroy } from './photo.controller'
 import { schema } from './photo.model'
 export Photo, { schema } from './photo.model'
@@ -52,7 +52,7 @@ router.get('/:id',
  * @apiError 401 admin access only.
  */
 router.put('/:id',
-  session({ required: true, roles: ['admin'] }),
+  token({ required: true, roles: ['admin'] }),
   body({ color, thumbnail, small, medium, large, owner, url, title }),
   update)
 
@@ -67,7 +67,7 @@ router.put('/:id',
  * @apiError 401 admin access only.
  */
 router.delete('/:id',
-  session({ required: true, roles: ['admin'] }),
+  token({ required: true, roles: ['admin'] }),
   destroy)
 
 export default router

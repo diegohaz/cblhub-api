@@ -67,31 +67,8 @@ photoSchema.methods = {
 }
 
 photoSchema.statics = {
-  translateFromFlickr (flickrPhoto) {
-    const Photo = mongoose.model('Photo')
-    const sizes = ['thumbnail', 'small', 'medium', 'large']
-    const photo = new Photo({
-      _id: flickrPhoto.id,
-      owner: flickrPhoto.ownername,
-      url: `https://www.flickr.com/photos/${flickrPhoto.owner}/${flickrPhoto.id}`,
-      title: flickrPhoto.title
-    })
-
-    sizes.forEach((size, i) => {
-      let letter = size.charAt(0)
-      const sizeExists = !!flickrPhoto[`url_${letter}`]
-      if (!sizeExists && i > 0) {
-        photo[size] = photo[sizes[i - 1]]
-      } else {
-        photo[size] = {
-          src: flickrPhoto[`url_${letter}`],
-          width: flickrPhoto[`width_${letter}`],
-          height: flickrPhoto[`height_${letter}`]
-        }
-      }
-    })
-
-    return photo
+  createFromService ({ id, owner, url, title, thumbnail, small, medium, large }) {
+    return this.createUnique({ _id: id, owner, url, title, thumbnail, small, medium, large })
   }
 }
 
