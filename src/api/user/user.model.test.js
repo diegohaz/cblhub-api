@@ -1,163 +1,116 @@
-import test from 'ava'
 import crypto from 'crypto'
-import mockgoose from 'mockgoose'
-import mongoose from '../../config/mongoose'
-import { schema } from '.'
+import { User } from '.'
 
-test.beforeEach(async (t) => {
-  const mongo = new mongoose.Mongoose()
-  await mockgoose(mongo)
-  await mongo.connect('')
-  const User = mongo.model('User', schema)
-  const user = await User.create({ name: 'user', email: 'a@a.com', password: '123456' })
+let user
 
-  t.context = { ...t.context, User, user }
+beforeEach(async () => {
+  user = await User.create({ name: 'user', email: 'a@a.com', password: '123456' })
 })
 
-test.cb.after.always((t) => {
-  mockgoose.reset(t.end)
-})
-
-test('view', (t) => {
-  const { user } = t.context
-  const fullView = user.view(true)
-  t.true(fullView.id === user.id)
-  t.true(fullView.name === user.name)
-  t.true(fullView.email === user.email)
-  t.true(fullView.picture === user.picture)
-  t.true(fullView.createdAt === user.createdAt)
-})
-
-test('name', (t) => {
-  t.context.user.name = ''
-  t.context.user.email = 'test@example.com'
-  t.true(t.context.user.name === 'test')
-})
-
-test('picture', async (t) => {
-  const { user } = t.context
-  const hash = crypto.createHash('md5').update(user.email).digest('hex')
-  t.true(user.picture === `https://gravatar.com/avatar/${hash}?d=identicon`)
-
-  user.picture = 'test.jpg'
-  user.email = 'test@example.com'
-  await user.save()
-  t.true(user.picture === 'test.jpg')
-})
-
-test('authenticate', async (t) => {
-  t.truthy(await t.context.user.authenticate('123456'))
-  t.falsy(await t.context.user.authenticate('blah'))
-})
-
-const serviceUser = {
-  id: '123',
-  name: 'Test Name',
-  email: 'test@test.com',
-  picture: 'test.jpg'
-}
-
-test('createFromService (facebook) - email already registered', async (t) => {
-  const { User, user } = t.context
-  const updatedUser = await User.createFromService({
-    ...serviceUser,
-    service: 'facebook',
-    email: 'a@a.com'
+describe('set email', () => {
+  it('sets name automatically', () => {
+    user.name = ''
+    user.email = 'test@example.com'
+    expect(user.name).toEqual('test')
   })
-  t.true(updatedUser.id === user.id)
-  t.true(updatedUser.services.facebook === serviceUser.id)
-  t.true(updatedUser.name === serviceUser.name)
-  t.true(updatedUser.email === user.email)
-  t.true(updatedUser.picture === serviceUser.picture)
-})
 
-test('createFromService (facebook) - service id already registered', async (t) => {
-  const { User, user } = t.context
-  await user.set({ services: { facebook: serviceUser.id } }).save()
-  const updatedUser = await User.createFromService({ ...serviceUser, service: 'facebook' })
-  t.true(updatedUser.id === user.id)
-  t.true(updatedUser.services.facebook === serviceUser.id)
-  t.true(updatedUser.name === serviceUser.name)
-  t.true(updatedUser.email === user.email)
-  t.true(updatedUser.picture === serviceUser.picture)
-})
-
-test('createFromService (facebook) - new user', async (t) => {
-  const { User, user } = t.context
-  const createdUser = await User.createFromService({ ...serviceUser, service: 'facebook' })
-  t.true(createdUser.id !== user.id)
-  t.true(createdUser.services.facebook === '123')
-  t.true(createdUser.name === serviceUser.name)
-  t.true(createdUser.email === serviceUser.email)
-  t.true(createdUser.picture === serviceUser.picture)
-})
-
-test('createFromService (github) - email already registered', async (t) => {
-  const { User, user } = t.context
-  const updatedUser = await User.createFromService({
-    ...serviceUser,
-    service: 'github',
-    email: 'a@a.com'
+  it('sets picture automatically', () => {
+    const hash = crypto.createHash('md5').update(user.email).digest('hex')
+    expect(user.picture).toEqual(`https://gravatar.com/avatar/${hash}?d=identicon`)
   })
-  t.true(updatedUser.id === user.id)
-  t.true(updatedUser.services.github === serviceUser.id)
-  t.true(updatedUser.name === serviceUser.name)
-  t.true(updatedUser.email === user.email)
-  t.true(updatedUser.picture === serviceUser.picture)
-})
 
-test('createFromService (github) - service id already registered', async (t) => {
-  const { User, user } = t.context
-  await user.set({ services: { github: serviceUser.id } }).save()
-  const updatedUser = await User.createFromService({ ...serviceUser, service: 'github' })
-  t.true(updatedUser.id === user.id)
-  t.true(updatedUser.services.github === serviceUser.id)
-  t.true(updatedUser.name === serviceUser.name)
-  t.true(updatedUser.email === user.email)
-  t.true(updatedUser.picture === serviceUser.picture)
-})
-
-test('createFromService (github) - new user', async (t) => {
-  const { User, user } = t.context
-  const createdUser = await User.createFromService({ ...serviceUser, service: 'github' })
-  t.true(createdUser.id !== user.id)
-  t.true(createdUser.services.github === '123')
-  t.true(createdUser.name === serviceUser.name)
-  t.true(createdUser.email === serviceUser.email)
-  t.true(createdUser.picture === serviceUser.picture)
-})
-
-test('createFromService (google) - email already registered', async (t) => {
-  const { User, user } = t.context
-  const updatedUser = await User.createFromService({
-    ...serviceUser,
-    service: 'google',
-    email: 'a@a.com'
+  it('changes picture when it is gravatar', () => {
+    user.email = 'b@b.com'
+    const hash = crypto.createHash('md5').update(user.email).digest('hex')
+    expect(user.picture).toEqual(`https://gravatar.com/avatar/${hash}?d=identicon`)
   })
-  t.true(updatedUser.id === user.id)
-  t.true(updatedUser.services.google === serviceUser.id)
-  t.true(updatedUser.name === serviceUser.name)
-  t.true(updatedUser.email === user.email)
-  t.true(updatedUser.picture === serviceUser.picture)
+
+  it('does not change picture when it is already set and is not gravatar', () => {
+    user.picture = 'not_gravatar.jpg'
+    user.email = 'c@c.com'
+    expect(user.picture).toEqual('not_gravatar.jpg')
+  })
 })
 
-test('createFromService (google) - service id already registered', async (t) => {
-  const { User, user } = t.context
-  await user.set({ services: { google: serviceUser.id } }).save()
-  const updatedUser = await User.createFromService({ ...serviceUser, service: 'google' })
-  t.true(updatedUser.id === user.id)
-  t.true(updatedUser.services.google === serviceUser.id)
-  t.true(updatedUser.name === serviceUser.name)
-  t.true(updatedUser.email === user.email)
-  t.true(updatedUser.picture === serviceUser.picture)
+describe('view', () => {
+  it('returns simple view', () => {
+    const view = user.view()
+    expect(view).toBeDefined()
+    expect(view.id).toEqual(user.id)
+    expect(view.name).toEqual(user.name)
+    expect(view.picture).toEqual(user.picture)
+  })
+
+  it('returns full view', () => {
+    const view = user.view(true)
+    expect(view).toBeDefined()
+    expect(view.id).toEqual(user.id)
+    expect(view.name).toEqual(user.name)
+    expect(view.email).toEqual(user.email)
+    expect(view.picture).toEqual(user.picture)
+    expect(view.createdAt).toEqual(user.createdAt)
+  })
 })
 
-test('createFromService (google) - new user', async (t) => {
-  const { User, user } = t.context
-  const createdUser = await User.createFromService({ ...serviceUser, service: 'google' })
-  t.true(createdUser.id !== user.id)
-  t.true(createdUser.services.google === '123')
-  t.true(createdUser.name === serviceUser.name)
-  t.true(createdUser.email === serviceUser.email)
-  t.true(createdUser.picture === serviceUser.picture)
+describe('authenticate', () => {
+  it('returns the user when authentication succeed', async () => {
+    expect(await user.authenticate('123456')).toEqual(user)
+  })
+
+  it('returns false when authentication fails', async () => {
+    expect(await user.authenticate('blah')).toBe(false)
+  })
+})
+
+describe('createFromService', () => {
+  let serviceUser
+
+  beforeEach(() => {
+    serviceUser = {
+      id: '123',
+      name: 'Test Name',
+      email: 'test@test.com',
+      picture: 'test.jpg'
+    }
+  })
+
+  ;['facebook', 'github', 'google'].forEach((service) => {
+    describe(service, () => {
+      beforeEach(() => {
+        serviceUser.service = service
+      })
+
+      it('updates user when email is already registered', async () => {
+        const updatedUser = await User.createFromService({ ...serviceUser, email: 'a@a.com' })
+        // keep
+        expect(updatedUser.id).toEqual(user.id)
+        expect(updatedUser.email).toEqual(user.email)
+        // update
+        expect(updatedUser.name).toEqual(serviceUser.name)
+        expect(updatedUser.services[service]).toEqual(serviceUser.id)
+        expect(updatedUser.picture).toEqual(serviceUser.picture)
+      })
+
+      it('updates user when service id is already registered', async () => {
+        await user.set({ services: { [service]: serviceUser.id } }).save()
+        const updatedUser = await User.createFromService(serviceUser)
+        // keep
+        expect(updatedUser.id).toEqual(user.id)
+        expect(updatedUser.email).toEqual(user.email)
+        // update
+        expect(updatedUser.name).toEqual(serviceUser.name)
+        expect(updatedUser.services[service]).toEqual(serviceUser.id)
+        expect(updatedUser.picture).toEqual(serviceUser.picture)
+      })
+
+      it('creates a new user when neither service id and email was found', async () => {
+        const createdUser = await User.createFromService(serviceUser)
+        expect(createdUser.id).not.toEqual(user.id)
+        expect(createdUser.services[service]).toEqual(serviceUser.id)
+        expect(createdUser.name).toEqual(serviceUser.name)
+        expect(createdUser.email).toEqual(serviceUser.email)
+        expect(createdUser.picture).toEqual(serviceUser.picture)
+      })
+    })
+  })
 })

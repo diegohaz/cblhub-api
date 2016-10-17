@@ -29,10 +29,9 @@ export const update = ({ bodymen: { body }, params }, res, next) =>
     .then(success(res))
     .catch(next)
 
-export const destroy = ({ params }, res, next) => {
+export const destroy = ({ params }, res, next) =>
   Tag.findById(params.id)
     .then(notFound(res))
     .then((tag) => tag ? tag.remove() : null)
     .then(success(res, 204))
     .catch(next)
-}

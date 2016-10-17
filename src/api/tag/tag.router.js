@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
-import { session } from '../../services/passport'
+import { token } from '../../services/passport'
 import { create, index, show, update, destroy } from './tag.controller'
 import { schema } from './tag.model'
 export Tag, { schema } from './tag.model'
@@ -22,7 +22,7 @@ const { name } = schema.tree
  * @apiError 401 admin access only.
  */
 router.post('/',
-  session({ required: true, roles: ['admin'] }),
+  token({ required: true, roles: ['admin'] }),
   body({ name }),
   create)
 
@@ -62,7 +62,7 @@ router.get('/:id',
  * @apiError 401 admin access only.
  */
 router.put('/:id',
-  session({ required: true, roles: ['admin'] }),
+  token({ required: true, roles: ['admin'] }),
   body({ name }),
   update)
 
@@ -77,7 +77,7 @@ router.put('/:id',
  * @apiError 401 admin access only.
  */
 router.delete('/:id',
-  session({ required: true, roles: ['admin'] }),
+  token({ required: true, roles: ['admin'] }),
   destroy)
 
 export default router

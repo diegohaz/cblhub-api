@@ -9,8 +9,8 @@ import * as githubService from '../github'
 import * as googleService from '../google'
 import User, { schema } from '../../api/user/user.model'
 
-export const basic = () => (req, res, next) =>
-  passport.authenticate('basic', { session: false }, (err, user, info) => {
+export const password = () => (req, res, next) =>
+  passport.authenticate('password', { session: false }, (err, user, info) => {
     if (err && err.param) {
       return res.status(400).json(err)
     } else if (err || !user) {
@@ -21,6 +21,7 @@ export const basic = () => (req, res, next) =>
       next()
     })
   })(req, res, next)
+
 export const facebook = () =>
   passport.authenticate('facebook', { session: false })
 
@@ -33,8 +34,8 @@ export const google = () =>
 export const master = () =>
   passport.authenticate('master', { session: false })
 
-export const session = ({ required, roles = User.roles } = {}) => (req, res, next) =>
-  passport.authenticate('session', { session: false }, (err, user, info) => {
+export const token = ({ required, roles = User.roles } = {}) => (req, res, next) =>
+  passport.authenticate('token', { session: false }, (err, user, info) => {
     if (err || (required && !user) || (required && !~roles.indexOf(user.role))) {
       return res.status(401).end()
     }
@@ -44,7 +45,7 @@ export const session = ({ required, roles = User.roles } = {}) => (req, res, nex
     })
   })(req, res, next)
 
-passport.use('basic', new BasicStrategy((email, password, done) => {
+passport.use('password', new BasicStrategy((email, password, done) => {
   const userSchema = new Schema({ email: schema.tree.email, password: schema.tree.password })
 
   userSchema.validate({ email, password }, (err) => {
@@ -98,7 +99,7 @@ passport.use('master', new BearerStrategy((token, done) => {
   }
 }))
 
-passport.use('session', new JwtStrategy({
+passport.use('token', new JwtStrategy({
   secretOrKey: jwtSecret,
   jwtFromRequest: ExtractJwt.fromExtractors([
     ExtractJwt.fromUrlQueryParameter('access_token'),

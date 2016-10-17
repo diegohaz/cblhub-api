@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { middleware as query } from 'querymen'
 import { middleware as body } from 'bodymen'
-import { basic, master, session } from '../../services/passport'
+import { password as passwordAuth, master, token } from '../../services/passport'
 import { index, showMe, show, create, update, updatePassword, destroy } from './user.controller'
 import { schema } from './user.model'
 export User, { schema } from './user.model'
@@ -21,7 +21,7 @@ const { email, password, name, picture, role } = schema.tree
  * @apiError 401 Admin access only.
  */
 router.get('/',
-  session({ required: true, roles: ['admin'] }),
+  token({ required: true, roles: ['admin'] }),
   query(),
   index)
 
@@ -34,7 +34,7 @@ router.get('/',
  * @apiSuccess {Object} user User's data.
  */
 router.get('/me',
-  session({ required: true }),
+  token({ required: true }),
   showMe)
 
 /**
@@ -83,7 +83,7 @@ router.post('/',
  * @apiError 404 User not found.
  */
 router.put('/:id',
-  session({ required: true }),
+  token({ required: true }),
   body({ name, picture }),
   update)
 
@@ -99,7 +99,7 @@ router.put('/:id',
  * @apiError 404 User not found.
  */
 router.put('/:id/password',
-  basic(),
+  passwordAuth(),
   body({ password }),
   updatePassword)
 
@@ -114,7 +114,7 @@ router.put('/:id/password',
  * @apiError 404 User not found.
  */
 router.delete('/:id',
-  session({ required: true, roles: ['admin'] }),
+  token({ required: true, roles: ['admin'] }),
   destroy)
 
 export default router

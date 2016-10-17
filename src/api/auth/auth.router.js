@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { login } from './auth.controller'
-import { basic, master, facebook, github, google } from '../../services/passport'
+import { password, master, facebook, github, google } from '../../services/passport'
 
 const router = new Router()
 
@@ -17,7 +17,7 @@ const router = new Router()
  */
 router.post('/',
   master(),
-  basic(),
+  password(),
   login)
 
 /**

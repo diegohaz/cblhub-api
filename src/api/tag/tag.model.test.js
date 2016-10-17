@@ -1,43 +1,41 @@
-import test from 'ava'
-import mockgoose from 'mockgoose'
-import mongoose from '../../config/mongoose'
-import { schema } from '.'
+import { Tag } from '.'
 
-test.beforeEach(async (t) => {
-  const mongo = new mongoose.Mongoose()
-  await mockgoose(mongo)
-  await mongo.connect('')
-  const Tag = mongo.model('Tag', schema)
-  const tag = await Tag.createUnique({ name: 'test' })
+let tag
 
-  t.context = { ...t.context, Tag, tag }
+beforeEach(async () => {
+  tag = await Tag.create({ name: 'test' })
 })
 
-test.cb.after.always((t) => {
-  mockgoose.reset(t.end)
+describe('view', () => {
+  it('returns simple view', () => {
+    const view = tag.view()
+    expect(typeof view).toEqual('object')
+    expect(view.id).toEqual(tag.id)
+    expect(view.name).toEqual(tag.name)
+    expect(view.createdAt).toBeTruthy()
+    expect(view.updatedAt).toBeTruthy()
+  })
+
+  it('returns full view', () => {
+    const view = tag.view(true)
+    expect(typeof view).toEqual('object')
+    expect(view.id).toEqual(tag.id)
+    expect(view.name).toEqual(tag.name)
+    expect(view.createdAt).toBeTruthy()
+    expect(view.updatedAt).toBeTruthy()
+  })
 })
 
-test('view', (t) => {
-  const { tag } = t.context
-  const view = tag.view()
-  t.true(typeof view === 'object')
-  t.true(view.id === tag.id)
-  t.true(view.name === tag.name)
-})
+describe('increment', () => {
+  it('increments tag count', async () => {
+    expect(tag.count).toBe(0)
+    await Tag.increment([tag])
+    expect((await Tag.findById(tag.id)).count).toBe(1)
+    await Tag.increment([tag], 3)
+    expect((await Tag.findById(tag.id)).count).toBe(4)
+  })
 
-test('combine tags with same name', async (t) => {
-  const { Tag, tag } = t.context
-  const anotherTag = await Tag.createUnique({ name: tag.name })
-  t.true(anotherTag.id === tag.id)
-  t.true(anotherTag.name === tag.name)
-})
-
-test('increment', async (t) => {
-  const { Tag, tag } = t.context
-  t.true(tag.count === 0)
-  await Tag.increment([tag])
-  t.true((await Tag.findById(tag.id)).count === 1)
-  await Tag.increment([tag], 3)
-  t.true((await Tag.findById(tag.id)).count === 4)
-  t.falsy(await Tag.increment([]))
+  it('returns nothing when tags has no length', async () => {
+    expect(await Tag.increment([])).toBeFalsy()
+  })
 })
