@@ -1,8 +1,9 @@
+import { EventEmitter } from 'events'
 import mockgoose from 'mockgoose'
 import mongoose from '../src/config/mongoose'
 import { mongo } from '../src/config'
 
-require('events').EventEmitter.defaultMaxListeners = Infinity
+EventEmitter.defaultMaxListeners = Infinity
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000
 
 // lodash

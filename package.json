@@ -10,12 +10,8 @@
     "test:integration": "npm test 'src/**/*.router.test.js'",
     "coverage": "npm test -- --coverage && opn coverage/lcov-report/index.html",
     "dev": "nodemon -i '*.test.js' .",
-    "prod": "npm run build && nodemon -i '*.test.js' -r dotenv-safe/config dist",
+    "prod": "cross-env NODE_ENV=production nodemon -i '*.test.js' -r dotenv-safe/config .",
     "lint": "eslint 'src/**/*.js'",
-    "clean": "del 'dist/!(.git*|Procfile)**'",
-    "copy": "copy package.json dist && copy src/**/package.json dist/src",
-    "transpile": "babel src -d dist/src -s inline -i 'src/**/*.test.js'",
-    "build": "npm run clean && npm run copy && npm run transpile",
     "docs": "apidoc -i src -o docs && apidoc-markdown -p docs -o DOCS.md && opn docs/index.html"
   },
   "jest": {
@@ -25,11 +21,9 @@
   "devDependencies": {
     "apidoc": "^0.16.1",
     "apidoc-markdown": "^0.2.0",
-    "babel-cli": "^6.14.0",
     "babel-eslint": "^7.0.0",
     "babel-jest": "^16.0.0",
-    "copy": "^0.3.0",
-    "del-cli": "^0.2.0",
+    "cross-env": "^3.1.3",
     "dotenv-safe": "^2.3.1",
     "eslint": "^3.3.1",
     "eslint-config-standard": "^6.0.0",
